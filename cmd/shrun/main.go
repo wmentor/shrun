@@ -3,9 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"runtime"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+
+	"github.com/wmentor/shrun/internal/network"
 )
 
 func main() {
@@ -18,6 +22,42 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	srvNetwork, err := network.NewManager(cli)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	found, err := srvNetwork.CheckNetworkExists(ctx)
+	if err != nil {
+		log.Printf("check network exists error: %v", err)
+		return
+	}
+
+	if found {
+		log.Println("network found")
+	} else {
+		log.Println("network not found. create it")
+		if _, err := srvNetwork.CreateNetwork(ctx); err != nil {
+			log.Printf("create network exists error: %v", err)
+			return
+		}
+	}
+
+	found, err = srvNetwork.CheckNetworkExists(ctx)
+	if err != nil || !found {
+		log.Printf("check network exists error: %v", err)
+		return
+	}
+
+	if err = srvNetwork.DeleteNetwork(ctx); err != nil {
+		log.Printf("delete network error: %v", err)
+		return
+	}
+
+	fmt.Println(runtime.GOARCH)
+	fmt.Println(runtime.GOOS)
+
 	netOpts := types.NetworkListOptions{}
 
 	nets, err := cli.NetworkList(ctx, netOpts)
@@ -27,7 +67,7 @@ func main() {
 
 	fmt.Println("Networks:")
 	for _, cnet := range nets {
-		fmt.Printf("%s %s %s\n", cnet.ID, cnet.Name, cnet.Driver)
+		fmt.Printf("%s %s %s %t\n", cnet.ID, cnet.Name, cnet.Driver, cnet.Internal)
 	}
 
 	fmt.Println("Images:")
@@ -56,6 +96,5 @@ func main() {
 
 	for _, container := range containers {
 		fmt.Println(container.ID, container.Names, container.State)
-
 	}
 }
