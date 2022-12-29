@@ -1,0 +1,34 @@
+FROM golang:1.18
+
+#ENV CGO_ENABLED 0
+ENV GOOS linux
+ENV GOARCH amd64
+ENV GOPROXY https://devci-nexus-int.l.postgrespro.ru/repository/goproxy
+ENV GOPRIVATE postgrespro.ru/*
+ENV GONOPROXY none
+ENV GONOSUMDB postgrespro.ru/*
+
+RUN mkdir -p /repo /goloop /download /go/pkg /go/bin
+
+RUN wget -O /download/l.postgrespro.ru.ca.crt https://ssl.postgrespro.ru/l.postgrespro.ru.ca.crt && mv /download/l.postgrespro.ru.ca.crt /usr/local/share/ca-certificates && update-ca-certificates
+
+ENV GOPATH /go
+
+RUN go install golang.org/x/tools/cmd/goimports@latest && go install github.com/golang/mock/mockgen@v1.6.0
+
+RUN wget -O /download/golangci-lint-1.45.0-linux-amd64.deb https://github.com/golangci/golangci-lint/releases/download/v1.45.0/golangci-lint-1.45.0-linux-amd64.deb && dpkg -i /download/*.deb
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install less vim \
+    && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
+    && apt-get autoremove -y \
+    && apt-get clean -y
+
+WORKDIR /goloop
+
+RUN printf 'package main\n\nimport (\n\t"time"\n)\n\nfunc main() {\n\tfor {\n\t\ttime.Sleep(time.Second)\n\t}\n}\n' > /goloop/goloop.go
+
+RUN go mod init goloop && go build 
+
+WORKDIR /repo
+
+ENTRYPOINT ["/goloop/goloop"]
+

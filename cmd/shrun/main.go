@@ -2,13 +2,19 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"runtime"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 
+	"github.com/wmentor/shrun/internal/common"
+	"github.com/wmentor/shrun/internal/image"
 	"github.com/wmentor/shrun/internal/network"
 )
 
@@ -97,4 +103,66 @@ func main() {
 	for _, container := range containers {
 		fmt.Println(container.ID, container.Names, container.State)
 	}
+
+	imageManager, err := image.NewManager(cli)
+	if err != nil {
+		panic(err)
+	}
+
+	imgNames := []string{"etcd:latest", "postgres:14", "ubuntu:20.04"}
+
+	for _, img := range imgNames {
+		if err = imageManager.CheckImageExists(ctx, img); err == nil {
+			log.Printf("image %s found\n", img)
+			continue
+		}
+
+		if !errors.Is(err, common.ErrNotFound) {
+			log.Println(err)
+			return
+		}
+
+		log.Printf("pull image %s\n", img)
+		if err = imageManager.PullImage(ctx, img); err != nil {
+			log.Println(err)
+		}
+	}
+
+	if err = imageManager.ExportFiles(); err != nil {
+		panic(err)
+	}
+
+	dir := filepath.Join(common.GetConfigDir(), "build")
+
+	cmd := exec.Command("docker", "build", "--platform", "linux/amd64", "-t", "gobuilder",
+		"-f", filepath.Join(common.GetConfigDir(), image.FileDockerGoBuilder), dir)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+
+	/*
+		buildOpts := types.ImageBuildOptions{
+			Dockerfile: filepath.Join(common.GetConfigDir(), image.FileDockerGoBuilder),
+			Platform:   "linux/amd64",
+		}
+
+		tar, err := archive.TarWithOptions(dir+"/", &archive.TarOptions{})
+		if err != nil {
+			panic(err)
+		}
+
+		bresp, err := cli.ImageBuild(ctx, tar, buildOpts)
+		if err != nil {
+			panic(err)
+		}
+		defer bresp.Body.Close()
+		br := bufio.NewReader(bresp.Body)
+
+		for {
+			str, err := br.ReadString('\n')
+			if err != nil && str == "" {
+				break
+			}
+			log.Print(str)
+		}*/
 }
