@@ -5,9 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"runtime"
 
 	"github.com/docker/docker/api/types"
@@ -132,37 +129,5 @@ func main() {
 		panic(err)
 	}
 
-	dir := filepath.Join(common.GetConfigDir(), "build")
-
-	cmd := exec.Command("docker", "build", "--platform", "linux/amd64", "-t", "gobuilder",
-		"-f", filepath.Join(common.GetConfigDir(), image.FileDockerGoBuilder), dir)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Run()
-
-	/*
-		buildOpts := types.ImageBuildOptions{
-			Dockerfile: filepath.Join(common.GetConfigDir(), image.FileDockerGoBuilder),
-			Platform:   "linux/amd64",
-		}
-
-		tar, err := archive.TarWithOptions(dir+"/", &archive.TarOptions{})
-		if err != nil {
-			panic(err)
-		}
-
-		bresp, err := cli.ImageBuild(ctx, tar, buildOpts)
-		if err != nil {
-			panic(err)
-		}
-		defer bresp.Body.Close()
-		br := bufio.NewReader(bresp.Body)
-
-		for {
-			str, err := br.ReadString('\n')
-			if err != nil && str == "" {
-				break
-			}
-			log.Print(str)
-		}*/
+	imageManager.BuildImage(ctx, image.DockerfileGoBuilder, "gobuilder:latest")
 }

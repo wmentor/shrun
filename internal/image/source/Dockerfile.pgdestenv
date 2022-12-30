@@ -1,0 +1,44 @@
+FROM ubuntu:20.04
+
+ARG PG_MAJOR=14
+ENV APP /opt/pgpro/sdm-$PG_MAJOR
+
+RUN mkdir -p /etc/systemd/system/systemd-logind.service.d /etc/shardman /build
+
+RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gnupg \
+    curl \
+    ca-certificates \
+    vim \
+    && echo "deb [arch=amd64] http://repo.postgrespro.ru/pg_probackup/deb focal main-focal" > /etc/apt/sources.list.d/probackup.list \
+    && curl -fsSL http://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
+    && apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install systemd-sysv \
+    libev4 \
+    libicu66 \
+    libldap-2.4-2 \
+    libpam0g \
+    libssl1.1 \
+    libxml2 \
+    tzdata \
+    ssl-cert \
+    locales \
+    dbus-x11 \
+    make \
+    libipc-run-perl \
+    libreadline8 \
+    pkg-config \
+    zlib1g \
+    git \
+    rsyslog \
+    openssh-client \
+    openssh-server \
+    tar \
+    gdb \
+    pg-probackup-$PG_MAJOR \
+    && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && grep ^postgres: /etc/group || groupadd postgres \
+    && grep ^postgres: /etc/passwd && usermod -s /bin/bash postgres \
+    || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres 
+
+#RUN echo 'eval "$(ssh-agent -s)"' >> .bashrc && echo 'ssh-add /var/lib/postgresql/.ssh/id_rsa' >> .bashrc

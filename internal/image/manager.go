@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -17,7 +19,9 @@ import (
 )
 
 const (
-	FileDockerGoBuilder = "Dockerfile.gobuilder"
+	DockerfileGoBuilder  = "Dockerfile.gobuilder"
+	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
+	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
 )
 
 type Manager struct {
@@ -84,6 +88,27 @@ func (mng *Manager) CheckImageExists(ctx context.Context, name string) error {
 	return common.ErrNotFound
 }
 
+func (mng *Manager) BuildImage(ctx context.Context, dockerfile string, tag string) error {
+	dir := filepath.Join(common.GetConfigDir(), dockerfile)
+
+	args := make([]string, 0, 10)
+
+	if runtime.GOARCH == "amd64" {
+		args = append(args, "build", "--platform", "linux/amd64")
+	} else {
+		args = append(args, "buildx", "build", "--platform", "linux/amd64")
+	}
+
+	args = append(args, "-t", tag, "-f", dir, common.GetDataDir())
+
+	cmd := exec.CommandContext(ctx, "docker", args...)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
+}
+
 type specRecord struct {
 	name string
 	data []byte
@@ -91,7 +116,9 @@ type specRecord struct {
 
 func (mng *Manager) ExportFiles() error {
 	files := []specRecord{
-		{FileDockerGoBuilder, source.SrcGoBuilder},
+		{DockerfileGoBuilder, source.SrcGoBuilder},
+		{DockerfilePgBuildEnv, source.SrcPgBuildEnv},
+		{DockerfilePgDestEnv, source.SrcPgDestEnv},
 	}
 
 	for _, rec := range files {
