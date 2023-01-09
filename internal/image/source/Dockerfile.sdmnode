@@ -1,0 +1,113 @@
+FROM gobuilder:latest as gbuilder
+
+ENV BUILDIR /build
+
+RUN mkdir $BUILDIR
+
+WORKDIR $BUILDIR
+COPY shardman-utils $BUILDIR/shardman-utils
+WORKDIR $BUILDIR/shardman-utils
+
+RUN --mount=type=cache,target=/go/pkg \
+    go mod tidy && make
+
+FROM pgbuildenv as sdmbuilder
+
+ENV \
+    BUILDIR=/build \
+    DEBIAN_FRONTEND=noninteractive \
+    LC_ALL=C.UTF-8 \
+    CFLAGS=-O0 
+
+WORKDIR $BUILDIR
+COPY shardman $BUILDIR/shardman
+#COPY pg_probackup $BUILDIR/shardman/contrib/pg_probackup
+WORKDIR $BUILDIR/shardman
+
+RUN ./configure --enable-debug \
+    --enable-cassert \
+    --enable-nls \
+    --with-perl \
+    --with-python \
+    --with-tcl \
+    --with-gssapi \
+    --with-openssl \
+    --with-libxml \
+    --with-libxslt \
+    --with-ldap \
+    --with-icu \
+    --with-tclconfig=/usr/lib/tcl8.6
+
+#    --enable-coverage \
+#    --enable-tap-tests \
+ 
+RUN make -s -j4 install \
+    && make -s -C contrib install \ 
+    && GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch REL_2_5 https://github.com/postgrespro/pg_probackup.git contrib/pg_probackup \
+    && cd contrib/pg_probackup \
+    && make && make install
+
+#WORKDIR $BUILDIR
+#COPY pg_probackup $BUILDIR/shardman/contrib/pg_probackup
+#RUN ls -la $BUILDIR/shardman/contrib/pg_probackup
+#RUN cd $BUILDIR/shardman/contrib/pg_probackup && make && ls -la
+
+FROM pgdestenv:latest
+
+ARG PG_MAJOR=14
+ARG SDM_CLUSTER_NAME=cluster0
+ARG SDM_LOG_LEVEL=debug
+ARG SDM_STORE_ENDPOINTS=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
+
+ENV APP /opt/pgpro/sdm-$PG_MAJOR
+
+COPY --from=sdmbuilder /usr/local/pgsql $APP
+#COPY --from=sdmbuilder /build/shardman/contrib/pg_probackup/pg_probackup $APP/bin
+COPY --from=sdmbuilder /build/shardman /build/shardman
+COPY rc.local /etc/rc.local
+COPY sdmspec.json /etc/shardman
+COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
+COPY --from=gbuilder /build/shardman-utils/systemd/ /tmp/systemd
+
+RUN sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /etc/rc.local && chmod 755 /etc/rc.local \
+    && sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /tmp/systemd/* \
+    && mv /tmp/systemd/* /lib/systemd/system \
+    && sed -i "s/var\/lib\/pgpro\/sdm-$PG_MAJOR\/data/etc\/shardman/g" /usr/lib/systemd/system/shardmand\@.service \
+    && chown postgres:postgres /etc/shardman -R \
+    && chown postgres:postgres /opt/pgpro -R \
+    && chown postgres:postgres /build -R \
+    && touch /var/log/postgres.log \
+    && chown postgres:postgres /var/log/postgres.log \
+    && mkdir -p $APP/data \
+    && printf "postgres ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers \
+    && printf "StrictHostKeyChecking no\n" >> /etc/ssh/ssh_config.d/pg.conf \
+    && printf "UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config.d/pg.conf \
+    && systemctl enable ssh rsyslog \
+    && mkdir -p /var/lib/postgresql \
+    && mkdir -p /var/lib/postgresql/.ssh/ \
+    && ssh-keygen -t rsa -N '' -f  /var/lib/postgresql/.ssh/id_rsa \
+    && cat /var/lib/postgresql/.ssh/id_rsa.pub > /var/lib/postgresql/.ssh/authorized_keys \
+    && chmod 0600 /var/lib/postgresql/.ssh/id_rsa \
+    && chown postgres:postgres -R /var/lib/postgresql/.ssh \
+    && cp -r /var/lib/postgresql/.ssh/ /root/.ssh
+
+RUN mkdir -p /var/lib/pgpro/sdm-${PG_MAJOR}/data \ 
+  &&  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" \ 
+  >> /etc/shardman/shardmand-cluster0.env
+
+RUN systemctl enable shardmand@${SDM_CLUSTER_NAME}
+
+ENV PATH "/opt/pgpro/sdm-$PG_MAJOR/bin:${PATH}"
+ENV LD_LIBRARY_PATH "/opt/pgpro/sdm-$PG_MAJOR/lib"
+RUN ldconfig /opt/pgpro/sdm-$PG_MAJOR/lib 
+
+EXPOSE 15432
+EXPOSE 5432
+EXPOSE 5433
+EXPOSE 5442
+EXPOSE 5443
+
+WORKDIR /
+
+CMD ["/bin/bash", "-c", "exec /sbin/init --log-color=true --log-level=info --log-target=console 3>&1"]
+

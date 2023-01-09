@@ -1,0 +1,39 @@
+FROM gobuilder:latest as gbuilder
+
+ENV BUILDIR /build
+
+RUN mkdir $BUILDIR
+
+WORKDIR $BUILDIR
+COPY shardman-utils $BUILDIR/shardman-utils
+WORKDIR $BUILDIR/shardman-utils
+
+RUN --mount=type=cache,target=/go/pkg \
+    go mod tidy && make
+
+FROM sdmnode:latest
+
+ARG PG_MAJOR=14
+ARG SDM_CLUSTER_NAME=cluster0
+ARG SDM_LOG_LEVEL=debug
+ARG SDM_STORE_ENDPOINTS=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
+
+ENV APP /opt/pgpro/sdm-$PG_MAJOR
+
+COPY sdmspec.json /etc/shardman
+COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
+
+RUN mkdir -p /var/lib/pgpro/sdm-14/data \ 
+  &&  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" \ 
+  >> /etc/shardman/shardmand-cluster0.env
+
+EXPOSE 15432
+EXPOSE 5432
+EXPOSE 5433
+EXPOSE 5442
+EXPOSE 5443
+
+WORKDIR /
+
+CMD ["/bin/bash", "-c", "exec /sbin/init --log-color=true --log-level=info --log-target=console 3>&1"]
+

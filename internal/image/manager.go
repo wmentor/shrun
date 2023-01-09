@@ -19,9 +19,12 @@ import (
 )
 
 const (
+	SpecFile             = "sdmspec.json"
 	DockerfileGoBuilder  = "Dockerfile.gobuilder"
 	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
 	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
+	DockerFileSdmNode    = "Dockerfile.sdmnode"
+	DockerFileShardman   = "Dockerfile.shardman"
 )
 
 type Manager struct {
@@ -116,9 +119,12 @@ type specRecord struct {
 
 func (mng *Manager) ExportFiles() error {
 	files := []specRecord{
+		{SpecFile, source.SrcSpec},
 		{DockerfileGoBuilder, source.SrcGoBuilder},
 		{DockerfilePgBuildEnv, source.SrcPgBuildEnv},
 		{DockerfilePgDestEnv, source.SrcPgDestEnv},
+		{DockerFileSdmNode, source.SrcSdmNode},
+		{DockerFileShardman, source.SrcShardman},
 	}
 
 	for _, rec := range files {
