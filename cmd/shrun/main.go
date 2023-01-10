@@ -2,17 +2,13 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
 	"runtime"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/spf13/cobra"
 
-	"github.com/wmentor/shrun/internal/common"
-	"github.com/wmentor/shrun/internal/image"
-	"github.com/wmentor/shrun/internal/network"
+	"github.com/wmentor/shrun/cmd/shrun/cmd"
 )
 
 func main() {
@@ -22,112 +18,100 @@ func main() {
 	}
 	defer cli.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	srvNetwork, err := network.NewManager(cli)
-	if err != nil {
-		log.Print(err)
-		return
+	baseCommand := &cobra.Command{
+		Use:   "shrun",
+		Short: "manage shardman cluster for dev",
 	}
 
-	found, err := srvNetwork.CheckNetworkExists(ctx)
-	if err != nil {
-		log.Printf("check network exists error: %v", err)
-		return
-	}
+	baseCommand.AddCommand(cmd.NewCommandPull(cli).Command())
 
-	if found {
-		log.Println("network found")
-	} else {
-		log.Println("network not found. create it")
-		if _, err := srvNetwork.CreateNetwork(ctx); err != nil {
-			log.Printf("create network exists error: %v", err)
-			return
-		}
-	}
+	log.Printf("platform: %s/%s", runtime.GOOS, runtime.GOARCH)
 
-	found, err = srvNetwork.CheckNetworkExists(ctx)
-	if err != nil || !found {
-		log.Printf("check network exists error: %v", err)
-		return
-	}
+	baseCommand.ExecuteContext(context.Background())
 
-	if err = srvNetwork.DeleteNetwork(ctx); err != nil {
-		log.Printf("delete network error: %v", err)
-		return
-	}
+	/*
 
-	fmt.Println(runtime.GOARCH)
-	fmt.Println(runtime.GOOS)
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 
-	netOpts := types.NetworkListOptions{}
-
-	nets, err := cli.NetworkList(ctx, netOpts)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Networks:")
-	for _, cnet := range nets {
-		fmt.Printf("%s %s %s %t\n", cnet.ID, cnet.Name, cnet.Driver, cnet.Internal)
-	}
-
-	fmt.Println("Images:")
-
-	imgOpt := types.ImageListOptions{All: true}
-
-	images, err := cli.ImageList(ctx, imgOpt)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, image := range images {
-		if len(image.RepoTags) > 0 && image.RepoTags[0] != "<none>:<none>" {
-			fmt.Printf("%s %v %v\n", image.ID, image.Labels, image.RepoTags)
-		}
-	}
-
-	fmt.Println("Containers:")
-
-	contOpts := types.ContainerListOptions{All: true}
-
-	containers, err := cli.ContainerList(ctx, contOpts)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, container := range containers {
-		fmt.Println(container.ID, container.Names, container.State)
-	}
-
-	imageManager, err := image.NewManager(cli)
-	if err != nil {
-		panic(err)
-	}
-
-	imgNames := []string{"etcd:latest", "postgres:14", "ubuntu:20.04"}
-
-	for _, img := range imgNames {
-		if err = imageManager.CheckImageExists(ctx, img); err == nil {
-			log.Printf("image %s found\n", img)
-			continue
-		}
-
-		if !errors.Is(err, common.ErrNotFound) {
-			log.Println(err)
+		srvNetwork, err := network.NewManager(cli)
+		if err != nil {
+			log.Print(err)
 			return
 		}
 
-		log.Printf("pull image %s\n", img)
-		if err = imageManager.PullImage(ctx, img); err != nil {
-			log.Println(err)
+		found, err := srvNetwork.CheckNetworkExists(ctx)
+		if err != nil {
+			log.Printf("check network exists error: %v", err)
+			return
 		}
-	}
 
-	if err = imageManager.ExportFiles(); err != nil {
-		panic(err)
-	}
+		if found {
+			log.Println("network found")
+		} else {
+			log.Println("network not found. create it")
+			if _, err := srvNetwork.CreateNetwork(ctx); err != nil {
+				log.Printf("create network exists error: %v", err)
+				return
+			}
+		}
 
-	imageManager.BuildImage(ctx, image.DockerfileGoBuilder, "gobuilder:latest")
+		found, err = srvNetwork.CheckNetworkExists(ctx)
+		if err != nil || !found {
+			log.Printf("check network exists error: %v", err)
+			return
+		}
+
+		if err = srvNetwork.DeleteNetwork(ctx); err != nil {
+			log.Printf("delete network error: %v", err)
+			return
+		}
+
+		netOpts := types.NetworkListOptions{}
+
+		nets, err := cli.NetworkList(ctx, netOpts)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("Networks:")
+		for _, cnet := range nets {
+			fmt.Printf("%s %s %s %t\n", cnet.ID, cnet.Name, cnet.Driver, cnet.Internal)
+		}
+
+		fmt.Println("Images:")
+
+		imgOpt := types.ImageListOptions{All: true}
+
+		images, err := cli.ImageList(ctx, imgOpt)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, image := range images {
+			if len(image.RepoTags) > 0 && image.RepoTags[0] != "<none>:<none>" {
+				fmt.Printf("%s %v %v\n", image.ID, image.Labels, image.RepoTags)
+			}
+		}
+
+		fmt.Println("Containers:")
+
+		contOpts := types.ContainerListOptions{All: true}
+
+		containers, err := cli.ContainerList(ctx, contOpts)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, container := range containers {
+			fmt.Println(container.ID, container.Names, container.State)
+		}
+
+
+		if err = imageManager.ExportFiles(); err != nil {
+			panic(err)
+		}
+
+		imageManager.BuildImage(ctx, image.DockerfileGoBuilder, "gobuilder:latest")
+	*/
 }

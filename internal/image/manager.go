@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -49,6 +50,9 @@ func (mng *Manager) PullImage(ctx context.Context, name string) error {
 	}
 
 	src := fmt.Sprintf("docker.io/library/%s", name)
+	if strings.Contains(name, "/") {
+		src = fmt.Sprintf("docker.io/%s", name)
+	}
 
 	reader, err := mng.client.ImagePull(ctx, src, opts)
 	if err != nil {
