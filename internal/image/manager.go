@@ -2,6 +2,7 @@ package image
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -121,7 +123,17 @@ type specRecord struct {
 	data []byte
 }
 
-func (mng *Manager) ExportFiles() error {
+type ExportSettings struct {
+	NoGoProxy   bool
+	Repfactor   int
+	Topology    string
+	LogLevel    string
+	ClusterName string
+	EtcdCount   int
+	PgMajor     int
+}
+
+func (mng *Manager) ExportFiles(settings ExportSettings) error {
 	files := []specRecord{
 		{SpecFile, source.SrcSpec},
 		{DockerfileGoBuilder, source.SrcGoBuilder},
@@ -132,7 +144,29 @@ func (mng *Manager) ExportFiles() error {
 	}
 
 	for _, rec := range files {
-		if err := mng.exportFile(filepath.Join(common.GetConfigDir(), rec.name), rec.data); err != nil {
+		data := string(rec.data)
+
+		if settings.NoGoProxy {
+			data = strings.ReplaceAll(data, "ENV GOPROXY", "#ENV GOPROXY")
+			data = strings.ReplaceAll(data, "ENV GONOPROXY", "#ENV GONOPROXY")
+		}
+
+		data = strings.ReplaceAll(data, "{{ Repfactor }}", strconv.Itoa(settings.Repfactor))
+		data = strings.ReplaceAll(data, "{{ PlacementPolicy }}", settings.Topology)
+		data = strings.ReplaceAll(data, "{{ ClusterName }}", settings.ClusterName)
+		data = strings.ReplaceAll(data, "{{ LogLevel }}", settings.LogLevel)
+		data = strings.ReplaceAll(data, "{{ PgMajor }}", strconv.Itoa(settings.PgMajor))
+
+		maker := bytes.NewBuffer(nil)
+		for i := 1; i <= settings.EtcdCount; i++ {
+			if i > 1 {
+				maker.WriteRune(',')
+			}
+			fmt.Fprintf(maker, "http://shr_etcd_%d:2379", i)
+		}
+		data = strings.ReplaceAll(data, "{{ EtcdList }}", maker.String())
+
+		if err := mng.exportFile(filepath.Join(common.GetConfigDir(), rec.name), []byte(data)); err != nil {
 			return fmt.Errorf("export %s error: %w", rec.name, err)
 		}
 	}

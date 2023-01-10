@@ -54,10 +54,10 @@ RUN make -s -j4 install \
 
 FROM pgdestenv:latest
 
-ARG PG_MAJOR=14
-ARG SDM_CLUSTER_NAME=cluster0
-ARG SDM_LOG_LEVEL=debug
-ARG SDM_STORE_ENDPOINTS=http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
+ARG PG_MAJOR={{ PgMajor }}
+ARG SDM_CLUSTER_NAME={{ ClusterName }}
+ARG SDM_LOG_LEVEL={{ LogLevel }}
+ARG SDM_STORE_ENDPOINTS={{ EtcdList }}
 
 ENV APP /opt/pgpro/sdm-$PG_MAJOR
 

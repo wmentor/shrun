@@ -43,8 +43,8 @@ func init() {
 		dirData = filepath.Join(uinfo.HomeDir, "build")
 	}
 
-	log.Printf("config dir: %s", dirConfig)
-	log.Printf("data dir: %s", dirData)
+	log.Printf("config dir : %s (env SHRDM_CONFIG_DIR or ~/.shrun)", dirConfig)
+	log.Printf("data dir: %s (env SHRDM_DATA_DIR or ~/build)", dirData)
 }
 
 func GetObjectPrefix() string {

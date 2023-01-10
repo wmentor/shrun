@@ -2,10 +2,10 @@
    "LadleSpec":{
       "PGsInitialPort": 5432,
       "ProxiesInitialPort": 5442,
-      "Repfactor":1,
+      "Repfactor": {{ Repfactor }},
       "MonitorsNum":2,
       "SilkInitialPort": 8000,
-      "PlacementPolicy": "cross"
+      "PlacementPolicy": "{{ PlacementPolicy }}"
    },
    "ClusterSpec":{
       "PgSuAuthMethod": "scram-sha-256",

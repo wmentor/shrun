@@ -24,6 +24,7 @@ func main() {
 	}
 
 	baseCommand.AddCommand(cmd.NewCommandPull(cli).Command())
+	baseCommand.AddCommand(cmd.NewCommandInit(cli).Command())
 
 	log.Printf("platform: %s/%s", runtime.GOOS, runtime.GOARCH)
 
