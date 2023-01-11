@@ -23,6 +23,7 @@ import (
 
 const (
 	SpecFile             = "sdmspec.json"
+	RcLocal              = "rc.local"
 	DockerfileGoBuilder  = "Dockerfile.gobuilder"
 	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
 	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
@@ -136,6 +137,7 @@ type ExportSettings struct {
 func (mng *Manager) ExportFiles(settings ExportSettings) error {
 	files := []specRecord{
 		{SpecFile, source.SrcSpec},
+		{RcLocal, source.SrcRcLocal},
 		{DockerfileGoBuilder, source.SrcGoBuilder},
 		{DockerfilePgBuildEnv, source.SrcPgBuildEnv},
 		{DockerfilePgDestEnv, source.SrcPgDestEnv},

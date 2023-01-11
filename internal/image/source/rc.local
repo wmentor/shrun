@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# We mount SHARDMAN_DATA directory as volume, so its permissions are
+# likely wrong. Fix them.
+SHARDMAN_DATA=/var/lib/pgpro/sdm-$(pg_major)/data
+
+if [ -d "${SHARDMAN_DATA}" ]; then
+        chown -R postgres:postgres "${SHARDMAN_DATA}"
+        chmod 700 "${SHARDMAN_DATA}"
+fi

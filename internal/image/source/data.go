@@ -19,5 +19,8 @@ var SrcSdmNode []byte
 //go:embed Dockerfile.shardman
 var SrcShardman []byte
 
+//go:embed rc.local
+var SrcRcLocal []byte
+
 //go:embed sdmspec.json
 var SrcSpec []byte

@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/user"
@@ -57,4 +58,20 @@ func GetConfigDir() string {
 
 func GetDataDir() string {
 	return dirData
+}
+
+func CopyFile(ctx context.Context, src string, dest string) error {
+	data, err := os.ReadFile(src)
+	if err != nil {
+		log.Printf("read file %s error: %v", src, err)
+		return err
+	}
+
+	if err = os.WriteFile(dest, data, 0755); err != nil {
+		log.Printf("write file %s error: %v", dest, err)
+		return err
+	}
+	log.Printf("copy %s -> %s", src, dest)
+
+	return nil
 }
