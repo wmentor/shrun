@@ -27,8 +27,9 @@ const (
 	DockerfileGoBuilder  = "Dockerfile.gobuilder"
 	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
 	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
-	DockerFileSdmNode    = "Dockerfile.sdmnode"
-	DockerFileShardman   = "Dockerfile.shardman"
+	DockerfilePgDoc      = "Dockerfile.pgdoc"
+	DockerfileSdmNode    = "Dockerfile.sdmnode"
+	DockerfileShardman   = "Dockerfile.shardman"
 )
 
 type Manager struct {
@@ -141,8 +142,9 @@ func (mng *Manager) ExportFiles(settings ExportSettings) error {
 		{DockerfileGoBuilder, source.SrcGoBuilder},
 		{DockerfilePgBuildEnv, source.SrcPgBuildEnv},
 		{DockerfilePgDestEnv, source.SrcPgDestEnv},
-		{DockerFileSdmNode, source.SrcSdmNode},
-		{DockerFileShardman, source.SrcShardman},
+		{DockerfileSdmNode, source.SrcSdmNode},
+		{DockerfileShardman, source.SrcShardman},
+		{DockerfilePgDoc, source.SrcPgDoc},
 	}
 
 	for _, rec := range files {

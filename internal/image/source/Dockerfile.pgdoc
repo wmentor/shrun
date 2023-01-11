@@ -1,0 +1,46 @@
+FROM gobuilder:latest AS gbuilder
+
+WORKDIR /goloop
+
+RUN printf 'package main\n\nimport (\n\t"time"\n)\n\nfunc main() {\n\tfor {\n\t\ttime.Sleep(time.Second)\n\t}\n}\n' > /goloop/goloop.go
+
+RUN go build 
+
+FROM pgbuildenv:latest
+
+RUN mkdir -p /build
+ENV BUILDIR /build
+
+ENV \
+    DEBIAN_FRONTEND=noninteractive \
+    LC_ALL=C.UTF-8 \
+    CFLAGS=-O0 
+
+WORKDIR $BUILDIR
+COPY shardman $BUILDIR/shardman
+WORKDIR $BUILDIR/shardman
+
+RUN ./configure --enable-debug \
+    --enable-cassert \
+    --enable-nls \
+    --with-perl \
+    --with-python \
+    --with-tcl \
+    --with-gssapi \
+    --with-openssl \
+    --with-libxml \
+    --with-libxslt \
+    --with-ldap \
+    --with-icu \
+    --enable-coverage \
+    --enable-tap-tests \
+    --with-tclconfig=/usr/lib/tcl8.6
+
+RUN cd /build/shardman/contrib/shardman/doc && make
+
+RUN mkdir /goloop
+
+COPY --from=gbuilder /goloop/goloop /goloop
+
+ENTRYPOINT ["/goloop/goloop"]
+

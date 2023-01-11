@@ -13,6 +13,9 @@ var SrcPgBuildEnv []byte
 //go:embed Dockerfile.pgdestenv
 var SrcPgDestEnv []byte
 
+//go:embed Dockerfile.pgdoc
+var SrcPgDoc []byte
+
 //go:embed Dockerfile.sdmnode
 var SrcSdmNode []byte
 

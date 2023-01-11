@@ -73,11 +73,15 @@ func (cb *CommandBuild) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if err = imageManager.BuildImage(ctx, image.DockerFileSdmNode, "sdmnode:latest"); err != nil {
+	if err = imageManager.BuildImage(ctx, image.DockerfileSdmNode, "sdmnode:latest"); err != nil {
 		return err
 	}
 
-	if err = imageManager.BuildImage(ctx, image.DockerFileShardman, "shardman:latest"); err != nil {
+	if err = imageManager.BuildImage(ctx, image.DockerfileShardman, "shardman:latest"); err != nil {
+		return err
+	}
+
+	if err = imageManager.BuildImage(ctx, image.DockerfilePgDoc, "pgdoc:latest"); err != nil {
 		return err
 	}
 
