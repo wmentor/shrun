@@ -24,6 +24,7 @@ import (
 const (
 	SpecFile             = "sdmspec.json"
 	RcLocal              = "rc.local"
+	DockerfileEtcd       = "Dockerfile.etcd"
 	DockerfileGoBuilder  = "Dockerfile.gobuilder"
 	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
 	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
@@ -145,6 +146,7 @@ func (mng *Manager) ExportFiles(settings ExportSettings) error {
 		{DockerfileSdmNode, source.SrcSdmNode},
 		{DockerfileShardman, source.SrcShardman},
 		{DockerfilePgDoc, source.SrcPgDoc},
+		{DockerfileEtcd, source.SrcEtcd},
 	}
 
 	for _, rec := range files {
@@ -166,7 +168,7 @@ func (mng *Manager) ExportFiles(settings ExportSettings) error {
 			if i > 1 {
 				maker.WriteRune(',')
 			}
-			fmt.Fprintf(maker, "http://shr_etcd_%d:2379", i)
+			fmt.Fprintf(maker, "http://%setcd%d:2379", common.GetObjectPrefix(), i)
 		}
 		data = strings.ReplaceAll(data, "{{ EtcdList }}", maker.String())
 

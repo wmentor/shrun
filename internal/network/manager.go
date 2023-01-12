@@ -79,6 +79,10 @@ func (mng *Manager) GetNetworkName() string {
 	return mng.networkName
 }
 
+func (mng *Manager) GetNetworkID(ctx context.Context) (string, error) {
+	return mng.fetchNetwork(ctx)
+}
+
 func (mng *Manager) fetchNetwork(ctx context.Context) (string, error) {
 	filter := filters.NewArgs(filters.KeyValuePair{Key: "name", Value: mng.networkName})
 	opts := types.NetworkListOptions{

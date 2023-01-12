@@ -1,0 +1,33 @@
+FROM gobuilder:latest as gobuilder
+
+ENV BUILDIR /build
+
+RUN mkdir $BUILDIR
+
+WORKDIR $BUILDIR
+COPY etcd $BUILDIR/etcd
+WORKDIR $BUILDIR/etcd
+
+RUN --mount=type=cache,target=/go/pkg \
+    go mod tidy && make
+
+FROM ubuntu:20.04
+
+ENV BUILDIR /build
+
+ENV APP /opt/pgpro/etcd
+RUN mkdir -p $APP/bin
+
+RUN grep ^etcd: /etc/group || groupadd etcd
+RUN grep ^etcd: /etc/passwd && usermod -s /bin/bash etcd || \
+    useradd -M -N -g etcd -r -d /var/lib/etcd -s /bin/bash -c "ETCD Server" etcd
+
+COPY --from=gobuilder /build/etcd/bin/ $APP/bin
+
+WORKDIR /
+
+EXPOSE 2379
+EXPOSE 2380
+
+ENV PATH "/opt/pgpro/etcd/bin:${PATH}"
+CMD [ "/opt/pgpro/etcd/bin/etcd" ]

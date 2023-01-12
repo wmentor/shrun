@@ -29,7 +29,7 @@ func NewCommandPull(cli *client.Client) *CommandPull {
 
 	cc := &cobra.Command{
 		Use:   "pull",
-		Short: "pull images (golang:1.18, etcd:latest, ubuntu:20.04, bitnami/etcd:3.5.6)",
+		Short: "pull images (golang:1.18, ubuntu:20.04)",
 		RunE:  cp.exec,
 	}
 
@@ -52,7 +52,7 @@ func (cp *CommandPull) exec(cc *cobra.Command, _ []string) error {
 
 	ctx := cc.Context()
 
-	imgNames := []string{"bitnami/etcd:3.5.6", "postgres:14", "ubuntu:20.04", "golang:1.18"}
+	imgNames := []string{"postgres:14", "ubuntu:20.04", "golang:1.18"}
 
 	for _, img := range imgNames {
 		if !cp.force {

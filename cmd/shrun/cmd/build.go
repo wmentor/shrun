@@ -16,15 +16,11 @@ var (
 )
 
 type CommandBuild struct {
-	command     *cobra.Command
-	cli         *client.Client
-	noGoProxy   bool
-	repfactor   int
-	topology    string
-	clusterName string
-	etcdCount   int
-	logLevel    string
-	pgMajor     int
+	command       *cobra.Command
+	cli           *client.Client
+	buildPgDoc    bool
+	buildBasic    bool
+	buildPostgres bool
 }
 
 func NewCommandBuild(cli *client.Client) *CommandBuild {
@@ -37,6 +33,10 @@ func NewCommandBuild(cli *client.Client) *CommandBuild {
 		Short: "build Dockerfiles",
 		RunE:  cb.exec,
 	}
+
+	cc.Flags().BoolVar(&cb.buildPgDoc, "build-pg-doc", false, "build pgdoc")
+	cc.Flags().BoolVar(&cb.buildBasic, "build-basic", false, "build gobuild, pgbuildenv, pgdestenv")
+	cc.Flags().BoolVar(&cb.buildPostgres, "build-pg", false, "build postgres")
 
 	cb.command = cc
 
@@ -61,28 +61,38 @@ func (cb *CommandBuild) exec(cc *cobra.Command, _ []string) error {
 		}
 	}
 
-	if err = imageManager.BuildImage(ctx, image.DockerfileGoBuilder, "gobuilder:latest"); err != nil {
-		return err
+	if cb.buildBasic {
+		if err = imageManager.BuildImage(ctx, image.DockerfileGoBuilder, "gobuilder:latest"); err != nil {
+			return err
+		}
+
+		if err = imageManager.BuildImage(ctx, image.DockerfilePgBuildEnv, "pgbuildenv:latest"); err != nil {
+			return err
+		}
+
+		if err = imageManager.BuildImage(ctx, image.DockerfilePgDestEnv, "pgdestenv:latest"); err != nil {
+			return err
+		}
+
+		if err = imageManager.BuildImage(ctx, image.DockerfileEtcd, "etcd:latest"); err != nil {
+			return err
+		}
 	}
 
-	if err = imageManager.BuildImage(ctx, image.DockerfilePgBuildEnv, "pgbuildenv:latest"); err != nil {
-		return err
-	}
-
-	if err = imageManager.BuildImage(ctx, image.DockerfilePgDestEnv, "pgdestenv:latest"); err != nil {
-		return err
-	}
-
-	if err = imageManager.BuildImage(ctx, image.DockerfileSdmNode, "sdmnode:latest"); err != nil {
-		return err
+	if cb.buildPostgres {
+		if err = imageManager.BuildImage(ctx, image.DockerfileSdmNode, "sdmnode:latest"); err != nil {
+			return err
+		}
 	}
 
 	if err = imageManager.BuildImage(ctx, image.DockerfileShardman, "shardman:latest"); err != nil {
 		return err
 	}
 
-	if err = imageManager.BuildImage(ctx, image.DockerfilePgDoc, "pgdoc:latest"); err != nil {
-		return err
+	if cb.buildPgDoc {
+		if err = imageManager.BuildImage(ctx, image.DockerfilePgDoc, "pgdoc:latest"); err != nil {
+			return err
+		}
 	}
 
 	return nil

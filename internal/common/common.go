@@ -1,15 +1,17 @@
 package common
 
 import (
+	"bufio"
 	"context"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 )
 
 var (
-	objectPrefix = "shrdm_"
+	objectPrefix = "shr"
 
 	dirConfig = os.Getenv("SHRDM_CONFIG_DIR")
 	dirData   = os.Getenv("SHRDM_DATA_DIR")
@@ -74,4 +76,56 @@ func CopyFile(ctx context.Context, src string, dest string) error {
 	log.Printf("copy %s -> %s", src, dest)
 
 	return nil
+}
+
+func GetEtcdList() ([]string, error) {
+	srcFile := filepath.Join(GetConfigDir(), "Dockerfile.shardman")
+	rh, err := os.Open(srcFile)
+	if err != nil {
+		log.Printf("open file %s error: %v", srcFile, err)
+		return nil, err
+	}
+	defer rh.Close()
+
+	prefix := "ARG SDM_STORE_ENDPOINTS="
+
+	br := bufio.NewReader(rh)
+	for {
+		str, err := br.ReadString('\n')
+		if err != nil && str == "" {
+			return nil, ErrNotFound
+		}
+
+		str = strings.TrimSpace(str)
+		if strings.HasPrefix(str, prefix) {
+			str = strings.TrimPrefix(str, prefix)
+			return strings.Split(str, ","), nil
+		}
+	}
+}
+
+func GetClusterName() (string, error) {
+	srcFile := filepath.Join(GetConfigDir(), "Dockerfile.shardman")
+	rh, err := os.Open(srcFile)
+	if err != nil {
+		log.Printf("open file %s error: %v", srcFile, err)
+		return "", err
+	}
+	defer rh.Close()
+
+	prefix := "ARG SDM_CLUSTER_NAME="
+
+	br := bufio.NewReader(rh)
+	for {
+		str, err := br.ReadString('\n')
+		if err != nil && str == "" {
+			return "", ErrNotFound
+		}
+
+		str = strings.TrimSpace(str)
+		if strings.HasPrefix(str, prefix) {
+			str = strings.TrimPrefix(str, prefix)
+			return str, nil
+		}
+	}
 }
