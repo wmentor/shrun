@@ -3,12 +3,15 @@ package container
 import (
 	"context"
 	"log"
+	"os"
 	"strings"
+	"sync"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/wmentor/shrun/internal/common"
 )
@@ -29,24 +32,32 @@ func NewManager(client *client.Client) (*Manager, error) {
 	return mng, nil
 }
 
-func (mng *Manager) CreateAndStart(ctx context.Context, imageName string, host string, cmd []string, netID string, envs []string) (string, error) {
+type ContainerStartSettings struct {
+	Image     string
+	Host      string
+	Cmd       []string
+	NetworkID string
+	Envs      []string
+}
+
+func (mng *Manager) CreateAndStart(ctx context.Context, css ContainerStartSettings) (string, error) {
 	baseConf := &container.Config{
-		Hostname: host,
-		Image:    imageName,
-		Cmd:      strslice.StrSlice(cmd),
-		Env:      envs,
+		Hostname: css.Host,
+		Image:    css.Image,
+		Cmd:      strslice.StrSlice(css.Cmd),
+		Env:      css.Envs,
 	}
 
 	hostConf := &container.HostConfig{
 		Privileged: true,
 	}
 
-	resp, err := mng.client.ContainerCreate(ctx, baseConf, hostConf, nil, nil, host)
+	resp, err := mng.client.ContainerCreate(ctx, baseConf, hostConf, nil, nil, css.Host)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := mng.client.NetworkConnect(ctx, netID, resp.ID, nil); err != nil {
+	if err := mng.client.NetworkConnect(ctx, css.NetworkID, resp.ID, nil); err != nil {
 		panic(err)
 	}
 
@@ -54,9 +65,36 @@ func (mng *Manager) CreateAndStart(ctx context.Context, imageName string, host s
 		panic(err)
 	}
 
-	mng.client.
-
 	return resp.ID, nil
+}
+
+func (mng *Manager) Exec(ctx context.Context, conID string, cmd []string) (int, error) {
+	opts := types.ExecConfig{
+		Tty:          true,
+		Cmd:          cmd,
+		AttachStderr: true,
+		AttachStdout: true,
+	}
+
+	eid, err := mng.client.ContainerExecCreate(ctx, conID, opts)
+	if err != nil {
+		log.Print(err)
+	}
+
+	aresp, err := mng.client.ContainerExecAttach(ctx, eid.ID, types.ExecStartCheck{})
+	if err != nil {
+		return 0, err
+	}
+	defer aresp.Close()
+
+	stdcopy.StdCopy(os.Stdout, os.Stderr, aresp.Reader)
+
+	eresp, err := mng.client.ContainerExecInspect(ctx, eid.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	return eresp.ExitCode, nil
 }
 
 func (mng *Manager) StopAll(ctx context.Context) {
@@ -67,28 +105,37 @@ func (mng *Manager) StopAll(ctx context.Context) {
 		panic(err)
 	}
 
+	var wg sync.WaitGroup
+
 	for _, container := range containers {
 		if !mng.isOurContainer(container.Names) {
 			continue
 		}
-		if container.State == "running" {
-			if err = mng.client.ContainerStop(ctx, container.ID, nil); err != nil {
-				log.Printf("stop container %s error: %v", container.Names[0], err)
-			} else {
-				log.Printf("stop container %s success", container.Names[0])
-			}
-		}
-		opts := types.ContainerRemoveOptions{
-			RemoveVolumes: true,
-			Force:         true,
-		}
 
-		if err = mng.client.ContainerRemove(ctx, container.ID, opts); err != nil {
-			log.Printf("remove container %s error: %v", container.Names[0], err)
-		} else {
-			log.Printf("remove container %s success", container.Names[0])
-		}
+		wg.Add(1)
+		go func(id string, name string, state string) {
+			defer wg.Done()
+			if state == "running" {
+				if err = mng.client.ContainerStop(ctx, id, nil); err != nil {
+					log.Printf("stop container %s error: %v", name, err)
+				} else {
+					log.Printf("stop container %s success", name)
+				}
+			}
+			opts := types.ContainerRemoveOptions{
+				RemoveVolumes: true,
+				Force:         true,
+			}
+
+			if err = mng.client.ContainerRemove(ctx, id, opts); err != nil {
+				log.Printf("remove container %s error: %v", name, err)
+			} else {
+				log.Printf("remove container %s success", name)
+			}
+		}(container.ID, container.Names[0], container.State)
 	}
+
+	wg.Wait()
 }
 
 func (mng *Manager) isOurContainer(names []string) bool {

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -20,9 +21,10 @@ var (
 )
 
 type CommandStart struct {
-	command    *cobra.Command
-	cli        *client.Client
-	nodesCount int
+	command     *cobra.Command
+	cli         *client.Client
+	nodesCount  int
+	makeCluster bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -37,6 +39,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	}
 
 	cc.Flags().IntVarP(&c.nodesCount, "nodes", "n", 2, "nodes count")
+	cc.Flags().BoolVar(&c.makeCluster, "make-cluster", false, "make cluster")
 
 	c.command = cc
 
@@ -85,7 +88,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 
 	etcdClusterMaker := strings.Builder{}
 	for i := range etcdList {
-		hostname := fmt.Sprintf("%setcd%d", common.GetObjectPrefix(), i+1)
+		hostname := fmt.Sprintf("%se%d", common.GetObjectPrefix(), i+1)
 		if i == 0 {
 			etcdClusterMaker.WriteRune(',')
 		}
@@ -94,8 +97,10 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		etcdClusterMaker.WriteString(fmt.Sprintf("http://%s:2380", hostname))
 	}
 
+	containerIDs := map[string]string{}
+
 	for i := range etcdList {
-		hostname := fmt.Sprintf("%setcd%d", common.GetObjectPrefix(), i+1)
+		hostname := fmt.Sprintf("%se%d", common.GetObjectPrefix(), i+1)
 
 		cmdParams := []string{
 			"/opt/pgpro/etcd/bin/etcd",
@@ -108,7 +113,19 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		}
 
 		log.Printf("start %s", hostname)
-		manager.CreateAndStart(ctx, "etcd:latest", hostname, cmdParams, netID, nil)
+
+		opts := container.ContainerStartSettings{
+			Image:     "etcd:latest",
+			Host:      hostname,
+			Cmd:       cmdParams,
+			NetworkID: netID,
+		}
+
+		if id, err := manager.CreateAndStart(ctx, opts); err == nil {
+			containerIDs[hostname] = id
+		} else {
+			log.Println("failed")
+		}
 	}
 
 	clusterName, _ := common.GetClusterName()
@@ -121,9 +138,36 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	for i := 0; i < c.nodesCount; i++ {
-		hostname := fmt.Sprintf("%snode%d", common.GetObjectPrefix(), i+1)
+		hostname := fmt.Sprintf("%sn%d", common.GetObjectPrefix(), i+1)
 		log.Printf("start %s", hostname)
-		manager.CreateAndStart(ctx, "shardman:latest", hostname, nil, netID, envs)
+
+		opts := container.ContainerStartSettings{
+			Image:     "shardman:latest",
+			Host:      hostname,
+			NetworkID: netID,
+			Envs:      envs,
+		}
+
+		if id, err := manager.CreateAndStart(ctx, opts); err == nil {
+			containerIDs[hostname] = id
+		} else {
+			log.Println("failed")
+		}
+	}
+
+	log.Println("load sdmspec.json")
+	manager.Exec(ctx, containerIDs["shrn1"], []string{"sh", "-c", "shardmanctl init -f /etc/shardman/sdmspec.json"})
+
+	if c.makeCluster {
+		maker := bytes.NewBuffer(nil)
+		for i := 0; i < c.nodesCount; i++ {
+			if i > 0 {
+				maker.WriteRune(',')
+			}
+			fmt.Fprintf(maker, "%sn%d", common.GetObjectPrefix(), i+1)
+		}
+		log.Println("add nodes")
+		manager.Exec(ctx, containerIDs["shrn1"], []string{"sh", "-c", "shardmanctl nodes add -n " + maker.String()})
 	}
 
 	return nil

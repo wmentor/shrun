@@ -168,7 +168,7 @@ func (mng *Manager) ExportFiles(settings ExportSettings) error {
 			if i > 1 {
 				maker.WriteRune(',')
 			}
-			fmt.Fprintf(maker, "http://%setcd%d:2379", common.GetObjectPrefix(), i)
+			fmt.Fprintf(maker, "http://%se%d:2379", common.GetObjectPrefix(), i)
 		}
 		data = strings.ReplaceAll(data, "{{ EtcdList }}", maker.String())
 
