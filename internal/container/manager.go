@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 
@@ -99,6 +100,16 @@ func (mng *Manager) Exec(ctx context.Context, conID string, command string, user
 	}
 
 	return eresp.ExitCode, nil
+}
+
+func Shell(ctx context.Context, containerName string, username string) error {
+	cmd := exec.CommandContext(ctx, "docker", "exec", "-ti", "-u", username, containerName, "/bin/bash")
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd.Run()
 }
 
 func (mng *Manager) StopAll(ctx context.Context) {
