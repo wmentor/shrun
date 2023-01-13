@@ -129,3 +129,29 @@ func GetClusterName() (string, error) {
 		}
 	}
 }
+
+func GetLogLevel() (string, error) {
+	srcFile := filepath.Join(GetConfigDir(), "Dockerfile.shardman")
+	rh, err := os.Open(srcFile)
+	if err != nil {
+		log.Printf("open file %s error: %v", srcFile, err)
+		return "", err
+	}
+	defer rh.Close()
+
+	prefix := "ARG SDM_LOG_LEVEL="
+
+	br := bufio.NewReader(rh)
+	for {
+		str, err := br.ReadString('\n')
+		if err != nil && str == "" {
+			return "", ErrNotFound
+		}
+
+		str = strings.TrimSpace(str)
+		if strings.HasPrefix(str, prefix) {
+			str = strings.TrimPrefix(str, prefix)
+			return str, nil
+		}
+	}
+}

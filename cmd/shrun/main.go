@@ -11,6 +11,10 @@ import (
 	"github.com/wmentor/shrun/cmd/shrun/cmd"
 )
 
+var (
+	Version = "0.1"
+)
+
 func main() {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -19,9 +23,12 @@ func main() {
 	defer cli.Close()
 
 	baseCommand := &cobra.Command{
-		Use:   "shrun",
-		Short: "manage shardman cluster for dev",
+		Use:     "shrun",
+		Short:   "manage shardman cluster for dev",
+		Version: Version,
 	}
+
+	baseCommand.CompletionOptions.HiddenDefaultCmd = true
 
 	baseCommand.AddCommand(cmd.NewCommandPull(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandInit(cli).Command())

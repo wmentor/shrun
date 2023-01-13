@@ -89,7 +89,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	etcdClusterMaker := strings.Builder{}
 	for i := range etcdList {
 		hostname := fmt.Sprintf("%se%d", common.GetObjectPrefix(), i+1)
-		if i == 0 {
+		if i > 0 {
 			etcdClusterMaker.WriteRune(',')
 		}
 		etcdClusterMaker.WriteString(hostname)
@@ -129,11 +129,12 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	clusterName, _ := common.GetClusterName()
+	logLevel, _ := common.GetLogLevel()
 
 	envs := []string{
 		fmt.Sprintf("CLUSTER_NAME=%s", clusterName),
 		fmt.Sprintf("SDM_CLUSTER_NAME=%s", clusterName),
-		"SDM_LOG_LEVEL=debug",
+		fmt.Sprintf("SDM_LOG_LEVEL=%s", logLevel),
 		fmt.Sprintf("SDM_STORE_ENDPOINTS=%s", strings.Join(etcdList, ",")),
 	}
 
@@ -155,7 +156,16 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		}
 	}
 
-	manager.Exec(ctx, containerIDs["shrn1"], "shardmanctl init -f /etc/shardman/sdmspec.json", "postgres")
+	node1ID := containerIDs["shrn1"]
+
+	code, err := manager.Exec(ctx, node1ID, "shardmanctl init -f /etc/shardman/sdmspec.json", "postgres")
+	if err != nil {
+		return err
+	}
+
+	if code != 0 {
+		return fmt.Errorf("command status code: %d", code)
+	}
 
 	if !c.skipNodeAdd {
 		maker := bytes.NewBuffer(nil)
@@ -165,7 +175,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 			}
 			fmt.Fprintf(maker, "%sn%d", common.GetObjectPrefix(), i+1)
 		}
-		code, err := manager.Exec(ctx, containerIDs["shrn1"], "shardmanctl nodes add -n "+maker.String(), "postgres")
+		code, err = manager.Exec(ctx, node1ID, "shardmanctl nodes add -n "+maker.String(), "postgres")
 		if err != nil {
 			return err
 		}
