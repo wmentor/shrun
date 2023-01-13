@@ -1,0 +1,11 @@
+bin/
+.vscode/
+.scannerwork/
+.DS_Store
+.idea
+*.log
+*.pid
+*.tmp
+*.so
+*.o
+*.*~

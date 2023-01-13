@@ -24,7 +24,7 @@ type CommandStart struct {
 	command     *cobra.Command
 	cli         *client.Client
 	nodesCount  int
-	makeCluster bool
+	skipNodeAdd bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -39,7 +39,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	}
 
 	cc.Flags().IntVarP(&c.nodesCount, "nodes", "n", 2, "nodes count")
-	cc.Flags().BoolVar(&c.makeCluster, "make-cluster", false, "make cluster")
+	cc.Flags().BoolVar(&c.skipNodeAdd, "skip-node-add", false, "skip shardmanctl nodes add")
 
 	c.command = cc
 
@@ -155,10 +155,9 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		}
 	}
 
-	log.Println("load sdmspec.json")
-	manager.Exec(ctx, containerIDs["shrn1"], []string{"sh", "-c", "shardmanctl init -f /etc/shardman/sdmspec.json"})
+	manager.Exec(ctx, containerIDs["shrn1"], "shardmanctl init -f /etc/shardman/sdmspec.json", "postgres")
 
-	if c.makeCluster {
+	if !c.skipNodeAdd {
 		maker := bytes.NewBuffer(nil)
 		for i := 0; i < c.nodesCount; i++ {
 			if i > 0 {
@@ -166,8 +165,13 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 			}
 			fmt.Fprintf(maker, "%sn%d", common.GetObjectPrefix(), i+1)
 		}
-		log.Println("add nodes")
-		manager.Exec(ctx, containerIDs["shrn1"], []string{"sh", "-c", "shardmanctl nodes add -n " + maker.String()})
+		code, err := manager.Exec(ctx, containerIDs["shrn1"], "shardmanctl nodes add -n "+maker.String(), "postgres")
+		if err != nil {
+			return err
+		}
+		if code != 0 {
+			return fmt.Errorf("command status code: %d", code)
+		}
 	}
 
 	return nil

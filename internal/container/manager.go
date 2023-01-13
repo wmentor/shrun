@@ -68,17 +68,21 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css ContainerStartSettin
 	return resp.ID, nil
 }
 
-func (mng *Manager) Exec(ctx context.Context, conID string, cmd []string) (int, error) {
+func (mng *Manager) Exec(ctx context.Context, conID string, command string, username string) (int, error) {
 	opts := types.ExecConfig{
 		Tty:          true,
-		Cmd:          cmd,
+		Cmd:          []string{"sh", "-c", command},
 		AttachStderr: true,
 		AttachStdout: true,
+		User:         username,
 	}
+
+	log.Println(command)
 
 	eid, err := mng.client.ContainerExecCreate(ctx, conID, opts)
 	if err != nil {
 		log.Print(err)
+		return 0, err
 	}
 
 	aresp, err := mng.client.ContainerExecAttach(ctx, eid.ID, types.ExecStartCheck{})

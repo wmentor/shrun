@@ -18,7 +18,7 @@ import (
 	"github.com/docker/docker/client"
 
 	"github.com/wmentor/shrun/internal/common"
-	"github.com/wmentor/shrun/internal/image/source"
+	"github.com/wmentor/shrun/internal/tmpl"
 )
 
 const (
@@ -138,15 +138,15 @@ type ExportSettings struct {
 
 func (mng *Manager) ExportFiles(settings ExportSettings) error {
 	files := []specRecord{
-		{SpecFile, source.SrcSpec},
-		{RcLocal, source.SrcRcLocal},
-		{DockerfileGoBuilder, source.SrcGoBuilder},
-		{DockerfilePgBuildEnv, source.SrcPgBuildEnv},
-		{DockerfilePgDestEnv, source.SrcPgDestEnv},
-		{DockerfileSdmNode, source.SrcSdmNode},
-		{DockerfileShardman, source.SrcShardman},
-		{DockerfilePgDoc, source.SrcPgDoc},
-		{DockerfileEtcd, source.SrcEtcd},
+		{SpecFile, tmpl.SrcSpec},
+		{RcLocal, tmpl.SrcRcLocal},
+		{DockerfileGoBuilder, tmpl.SrcGoBuilder},
+		{DockerfilePgBuildEnv, tmpl.SrcPgBuildEnv},
+		{DockerfilePgDestEnv, tmpl.SrcPgDestEnv},
+		{DockerfileSdmNode, tmpl.SrcSdmNode},
+		{DockerfileShardman, tmpl.SrcShardman},
+		{DockerfilePgDoc, tmpl.SrcPgDoc},
+		{DockerfileEtcd, tmpl.SrcEtcd},
 	}
 
 	for _, rec := range files {
