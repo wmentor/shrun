@@ -48,6 +48,8 @@ func init() {
 
 	log.Printf("config dir : %s (env SHRDM_CONFIG_DIR or ~/.shrun)", dirConfig)
 	log.Printf("data dir: %s (env SHRDM_DATA_DIR or ~/build)", dirData)
+
+	os.Mkdir(GetVolumeDir(), 0755)
 }
 
 func GetObjectPrefix() string {
@@ -60,6 +62,10 @@ func GetConfigDir() string {
 
 func GetDataDir() string {
 	return dirData
+}
+
+func GetVolumeDir() string {
+	return filepath.Join(GetDataDir(), "mntdata")
 }
 
 func CopyFile(ctx context.Context, src string, dest string) error {

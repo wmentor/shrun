@@ -184,5 +184,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		}
 	}
 
+	log.Printf("mount: %s --> /mntdata", common.GetVolumeDir())
+
 	return nil
 }

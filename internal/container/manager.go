@@ -2,6 +2,7 @@ package container
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"os/exec"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -41,6 +43,12 @@ type ContainerStartSettings struct {
 	Envs      []string
 }
 
+type Container struct {
+	ID     string
+	Names  []string
+	Status string
+}
+
 func (mng *Manager) CreateAndStart(ctx context.Context, css ContainerStartSettings) (string, error) {
 	baseConf := &container.Config{
 		Hostname: css.Host,
@@ -51,19 +59,31 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css ContainerStartSettin
 
 	hostConf := &container.HostConfig{
 		Privileged: true,
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: common.GetVolumeDir(),
+				Target: "/mntdata",
+			},
+		},
 	}
 
 	resp, err := mng.client.ContainerCreate(ctx, baseConf, hostConf, nil, nil, css.Host)
 	if err != nil {
-		panic(err)
+		log.Printf("create container %s error: %v", css.Host, err)
+		return "", err
 	}
 
-	if err := mng.client.NetworkConnect(ctx, css.NetworkID, resp.ID, nil); err != nil {
-		panic(err)
+	if css.NetworkID != "" {
+		if err := mng.client.NetworkConnect(ctx, css.NetworkID, resp.ID, nil); err != nil {
+			log.Printf("netword connect failed: %v", err)
+			return "", err
+		}
 	}
 
 	if err := mng.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		panic(err)
+		log.Printf("start container %s error: %v", css.Host, err)
+		return "", err
 	}
 
 	return resp.ID, nil
@@ -153,11 +173,76 @@ func (mng *Manager) StopAll(ctx context.Context) {
 	wg.Wait()
 }
 
+func (mng *Manager) GetContainer(ctx context.Context, name string) (Container, error) {
+	var result Container
+
+	contOpts := types.ContainerListOptions{All: true}
+
+	list, err := mng.client.ContainerList(ctx, contOpts)
+	if err != nil {
+		return result, err
+	}
+
+	for _, item := range list {
+		if mng.checkName(item.Names, name) {
+			result.ID = item.ID
+			result.Names = item.Names
+			result.Status = item.State
+			return result, nil
+		}
+	}
+
+	return result, common.ErrNotFound
+}
+
+func (mng *Manager) RemoveContainer(ctx context.Context, name string) error {
+	container, err := mng.GetContainer(ctx, name)
+	if err != nil {
+		if !errors.Is(err, common.ErrNotFound) {
+			return err
+		}
+		return nil
+	}
+
+	if container.Status == "running" {
+		if err = mng.client.ContainerStop(ctx, container.ID, nil); err != nil {
+			log.Printf("stop container %s error: %v", name, err)
+			return err
+		} else {
+			log.Printf("stop container %s success", name)
+		}
+	}
+
+	opts := types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		Force:         true,
+	}
+
+	if err = mng.client.ContainerRemove(ctx, container.ID, opts); err != nil {
+		log.Printf("remove container %s error: %v", name, err)
+		return err
+	} else {
+		log.Printf("remove container %s success", name)
+	}
+
+	return nil
+}
+
 func (mng *Manager) isOurContainer(names []string) bool {
 	for _, name := range names {
 		if strings.HasPrefix(name, "/"+common.GetObjectPrefix()) || strings.HasPrefix(name, common.GetObjectPrefix()) {
 			return true
 		}
 	}
+	return false
+}
+
+func (mng *Manager) checkName(names []string, searchName string) bool {
+	for _, name := range names {
+		if name == "/"+searchName || name == searchName {
+			return true
+		}
+	}
+
 	return false
 }

@@ -18,7 +18,6 @@ var (
 type CommandBuild struct {
 	command       *cobra.Command
 	cli           *client.Client
-	buildPgDoc    bool
 	buildBasic    bool
 	buildPostgres bool
 }
@@ -34,7 +33,6 @@ func NewCommandBuild(cli *client.Client) *CommandBuild {
 		RunE:  cb.exec,
 	}
 
-	cc.Flags().BoolVar(&cb.buildPgDoc, "build-pg-doc", false, "build pgdoc")
 	cc.Flags().BoolVar(&cb.buildBasic, "build-basic", false, "build gobuild, pgbuildenv, pgdestenv")
 	cc.Flags().BoolVar(&cb.buildPostgres, "build-pg", false, "build postgres")
 
@@ -87,12 +85,6 @@ func (cb *CommandBuild) exec(cc *cobra.Command, _ []string) error {
 
 	if err = imageManager.BuildImage(ctx, image.DockerfileShardman, "shardman:latest"); err != nil {
 		return err
-	}
-
-	if cb.buildPgDoc {
-		if err = imageManager.BuildImage(ctx, image.DockerfilePgDoc, "pgdoc:latest"); err != nil {
-			return err
-		}
 	}
 
 	return nil

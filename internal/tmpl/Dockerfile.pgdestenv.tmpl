@@ -3,7 +3,7 @@ FROM ubuntu:20.04
 ARG PG_MAJOR=14
 ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
-RUN mkdir -p /etc/systemd/system/systemd-logind.service.d /etc/shardman /build
+RUN mkdir -p /etc/systemd/system/systemd-logind.service.d /etc/shardman /build /mntdata && chmod -R 0777 /mntdata
 
 RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gnupg \
     curl \
