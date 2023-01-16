@@ -16,7 +16,7 @@ FROM ubuntu:20.04
 ENV BUILDIR /build
 
 ENV APP /opt/pgpro/etcd
-RUN mkdir -p $APP/bin /mntdata && chmod 0777 /mntdata
+RUN mkdir -p $APP/bin /mntdata && chmod -R 0777 /mntdata
 
 RUN grep ^etcd: /etc/group || groupadd etcd
 RUN grep ^etcd: /etc/passwd && usermod -s /bin/bash etcd || \
