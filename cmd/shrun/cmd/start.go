@@ -139,7 +139,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	for i := 0; i < c.nodesCount; i++ {
-		hostname := fmt.Sprintf("%sn%d", common.GetObjectPrefix(), i+1)
+		hostname := common.GetNodeName(i + 1)
 		log.Printf("start %s", hostname)
 
 		opts := container.ContainerStartSettings{
@@ -153,6 +153,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 			containerIDs[hostname] = id
 		} else {
 			log.Println("failed")
+			return err
 		}
 	}
 

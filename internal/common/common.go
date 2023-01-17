@@ -3,6 +3,7 @@ package common
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -160,4 +161,12 @@ func GetLogLevel() (string, error) {
 			return str, nil
 		}
 	}
+}
+
+func GetNodeName(num int) string {
+	return fmt.Sprintf("%sn%d", GetObjectPrefix(), num)
+}
+
+func GetEtcdName(num int) string {
+	return fmt.Sprintf("%se%d", GetObjectPrefix(), num)
 }
