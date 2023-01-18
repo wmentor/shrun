@@ -58,7 +58,7 @@ func (cb *CommandDoc) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if err = imageManager.BuildImage(ctx, image.DockerfilePgDoc, "pgdoc:latest"); err != nil {
+	if err = imageManager.BuildImage(ctx, common.DockerfilePgDoc, "pgdoc:latest"); err != nil {
 		return err
 	}
 

@@ -11,6 +11,18 @@ import (
 	"strings"
 )
 
+const (
+	SpecFile             = "sdmspec.json"
+	RcLocalFile          = "rc.local"
+	DockerfileEtcd       = "Dockerfile.etcd"
+	DockerfileGoBuilder  = "Dockerfile.gobuilder"
+	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
+	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
+	DockerfilePgDoc      = "Dockerfile.pgdoc"
+	DockerfileSdmNode    = "Dockerfile.sdmnode"
+	DockerfileShardman   = "Dockerfile.shardman"
+)
+
 var (
 	objectPrefix = "shr"
 

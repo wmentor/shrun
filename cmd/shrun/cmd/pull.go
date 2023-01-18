@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"errors"
-	"log"
-
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
-	"github.com/wmentor/shrun/internal/common"
+	"github.com/wmentor/shrun/internal/cases/pull"
 	"github.com/wmentor/shrun/internal/image"
 )
 
@@ -50,27 +47,10 @@ func (cp *CommandPull) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	ctx := cc.Context()
-
-	imgNames := []string{"postgres:14", "ubuntu:20.04", "golang:1.18"}
-
-	for _, img := range imgNames {
-		if !cp.force {
-			if err = imageManager.CheckImageExists(ctx, img); err == nil {
-				log.Printf("image %s found. skip\n", img)
-				continue
-			}
-
-			if !errors.Is(err, common.ErrNotFound) {
-				return err
-			}
-		}
-
-		log.Printf("pull image %s\n", img)
-		if err = imageManager.PullImage(ctx, img); err != nil {
-			log.Println(err)
-		}
+	myCase, err := pull.NewCase(imageManager, cp.force)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	return myCase.Exec(cc.Context())
 }

@@ -17,20 +17,13 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 
+	"github.com/wmentor/shrun/internal/cases/pull"
 	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/tmpl"
 )
 
-const (
-	SpecFile             = "sdmspec.json"
-	RcLocal              = "rc.local"
-	DockerfileEtcd       = "Dockerfile.etcd"
-	DockerfileGoBuilder  = "Dockerfile.gobuilder"
-	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
-	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
-	DockerfilePgDoc      = "Dockerfile.pgdoc"
-	DockerfileSdmNode    = "Dockerfile.sdmnode"
-	DockerfileShardman   = "Dockerfile.shardman"
+var (
+	_ pull.ImageManager = (*Manager)(nil)
 )
 
 type Manager struct {
@@ -138,15 +131,15 @@ type ExportSettings struct {
 
 func (mng *Manager) ExportFiles(settings ExportSettings) error {
 	files := []specRecord{
-		{SpecFile, tmpl.SrcSpec},
-		{RcLocal, tmpl.SrcRcLocal},
-		{DockerfileGoBuilder, tmpl.SrcGoBuilder},
-		{DockerfilePgBuildEnv, tmpl.SrcPgBuildEnv},
-		{DockerfilePgDestEnv, tmpl.SrcPgDestEnv},
-		{DockerfileSdmNode, tmpl.SrcSdmNode},
-		{DockerfileShardman, tmpl.SrcShardman},
-		{DockerfilePgDoc, tmpl.SrcPgDoc},
-		{DockerfileEtcd, tmpl.SrcEtcd},
+		{common.SpecFile, tmpl.SrcSpec},
+		{common.RcLocalFile, tmpl.SrcRcLocal},
+		{common.DockerfileGoBuilder, tmpl.SrcGoBuilder},
+		{common.DockerfilePgBuildEnv, tmpl.SrcPgBuildEnv},
+		{common.DockerfilePgDestEnv, tmpl.SrcPgDestEnv},
+		{common.DockerfileSdmNode, tmpl.SrcSdmNode},
+		{common.DockerfileShardman, tmpl.SrcShardman},
+		{common.DockerfilePgDoc, tmpl.SrcPgDoc},
+		{common.DockerfileEtcd, tmpl.SrcEtcd},
 	}
 
 	for _, rec := range files {
