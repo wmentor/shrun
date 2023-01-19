@@ -28,6 +28,7 @@ func NewCommandNodes(cli *client.Client) *CommandNodes {
 	}
 
 	cc.AddCommand(nodes.NewCommandAdd(cli).Command())
+	cc.AddCommand(nodes.NewCommandRM(cli).Command())
 
 	ci.command = cc
 
