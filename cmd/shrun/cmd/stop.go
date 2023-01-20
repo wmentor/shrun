@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
+	"github.com/wmentor/shrun/internal/cases/stop"
 	"github.com/wmentor/shrun/internal/container"
 	"github.com/wmentor/shrun/internal/network"
 )
@@ -44,23 +45,15 @@ func (c *CommandStop) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	ctx := cc.Context()
-
-	manager.StopAll(ctx)
-
 	networker, err := network.NewManager(c.cli)
 	if err != nil {
 		return err
 	}
 
-	started, err := networker.CheckNetworkExists(ctx)
+	myCase, err := stop.NewCase(manager, networker)
 	if err != nil {
 		return err
 	}
 
-	if started {
-		return networker.DeleteNetwork(ctx)
-	}
-
-	return nil
+	return myCase.Exec(cc.Context())
 }

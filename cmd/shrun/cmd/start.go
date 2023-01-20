@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -11,8 +12,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
+	"github.com/wmentor/shrun/internal/cases/build"
+	"github.com/wmentor/shrun/internal/cases/stop"
 	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/container"
+	"github.com/wmentor/shrun/internal/image"
 	"github.com/wmentor/shrun/internal/network"
 )
 
@@ -21,10 +25,12 @@ var (
 )
 
 type CommandStart struct {
-	command     *cobra.Command
-	cli         *client.Client
-	nodesCount  int
-	skipNodeAdd bool
+	command       *cobra.Command
+	cli           *client.Client
+	nodesCount    int
+	skipNodeAdd   bool
+	force         bool
+	updateDockers bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -40,6 +46,8 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 
 	cc.Flags().IntVarP(&c.nodesCount, "nodes", "n", 2, "nodes count")
 	cc.Flags().BoolVar(&c.skipNodeAdd, "skip-node-add", false, "skip shardmanctl nodes add")
+	cc.Flags().BoolVarP(&c.force, "force", "f", false, "force start. (if already started then restart)")
+	cc.Flags().BoolVarP(&c.updateDockers, "update", "u", false, "rebuild utils and update dockers")
 
 	c.command = cc
 
@@ -62,23 +70,31 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
+	manager, err := container.NewManager(c.cli)
+	if err != nil {
+		return err
+	}
+
 	started, err := networker.CheckNetworkExists(ctx)
 	if err != nil {
 		return err
 	}
 
 	if started {
-		return errors.New("already started")
+		if err = c.isStarted(ctx, manager, networker); err != nil {
+			return err
+		}
+	}
+
+	if c.updateDockers {
+		if err = c.update(ctx); err != nil {
+			return err
+		}
 	}
 
 	netID, err := networker.CreateNetwork(ctx)
 	if err != nil {
 		return fmt.Errorf("create network error: %w", err)
-	}
-
-	manager, err := container.NewManager(c.cli)
-	if err != nil {
-		return err
 	}
 
 	etcdList, err := common.GetEtcdList()
@@ -188,4 +204,34 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	log.Printf("mount: %s --> /mntdata", common.GetVolumeDir())
 
 	return nil
+}
+
+func (c *CommandStart) isStarted(ctx context.Context, manager *container.Manager, networker *network.Manager) error {
+	if c.force {
+		sc, err := stop.NewCase(manager, networker)
+		if err != nil {
+			return err
+		}
+		if err = sc.Exec(ctx); err != nil {
+			return err
+		}
+	} else {
+		return errors.New("already started")
+	}
+
+	return nil
+}
+
+func (c *CommandStart) update(ctx context.Context) error {
+	builder, err := image.NewManager(c.cli)
+	if err != nil {
+		return fmt.Errorf("image build init error: %w", err)
+	}
+
+	myCase, err := build.NewCase(builder)
+	if err != nil {
+		return fmt.Errorf("rebuild init case error: %w", err)
+	}
+
+	return myCase.Exec(ctx)
 }
