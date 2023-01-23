@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"runtime"
+	"time"
 
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
@@ -16,7 +17,7 @@ var (
 )
 
 func main() {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation(), client.WithTimeout(time.Minute*3))
 	if err != nil {
 		panic(err)
 	}
