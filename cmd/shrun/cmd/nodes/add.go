@@ -12,6 +12,7 @@ import (
 	"github.com/wmentor/shrun/cmd"
 	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/container"
+	"github.com/wmentor/shrun/internal/entities"
 	"github.com/wmentor/shrun/internal/network"
 )
 
@@ -113,7 +114,7 @@ func (ci *CommandAdd) exec(cc *cobra.Command, _ []string) error {
 		hostname := common.GetNodeName(nextNum + i)
 		log.Printf("start %s", hostname)
 
-		opts := container.ContainerStartSettings{
+		opts := entities.ContainerStartSettings{
 			Image:     "shardman:latest",
 			Host:      hostname,
 			NetworkID: netID,

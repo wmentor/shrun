@@ -21,6 +21,7 @@ const (
 	DockerfilePgDoc      = "Dockerfile.pgdoc"
 	DockerfileSdmNode    = "Dockerfile.sdmnode"
 	DockerfileShardman   = "Dockerfile.shardman"
+	DockerfileStolonInt  = "Dockerfile.stolon_int"
 )
 
 var (

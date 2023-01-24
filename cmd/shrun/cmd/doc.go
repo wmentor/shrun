@@ -9,6 +9,7 @@ import (
 	"github.com/wmentor/shrun/cmd"
 	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/container"
+	"github.com/wmentor/shrun/internal/entities"
 	"github.com/wmentor/shrun/internal/image"
 )
 
@@ -62,7 +63,7 @@ func (cb *CommandDoc) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	opts := container.ContainerStartSettings{
+	opts := entities.ContainerStartSettings{
 		Image: "pgdoc:latest",
 		Host:  "pgdoc",
 	}

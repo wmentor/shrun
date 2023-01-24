@@ -140,6 +140,7 @@ func (mng *Manager) ExportFiles(settings ExportSettings) error {
 		{common.DockerfileShardman, tmpl.SrcShardman},
 		{common.DockerfilePgDoc, tmpl.SrcPgDoc},
 		{common.DockerfileEtcd, tmpl.SrcEtcd},
+		{common.DockerfileStolonInt, tmpl.SrcStolonInt},
 	}
 
 	for _, rec := range files {

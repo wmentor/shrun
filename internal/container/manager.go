@@ -17,6 +17,7 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 
 	"github.com/wmentor/shrun/internal/common"
+	"github.com/wmentor/shrun/internal/entities"
 )
 
 type Manager struct {
@@ -35,21 +36,7 @@ func NewManager(client *client.Client) (*Manager, error) {
 	return mng, nil
 }
 
-type ContainerStartSettings struct {
-	Image     string
-	Host      string
-	Cmd       []string
-	NetworkID string
-	Envs      []string
-}
-
-type Container struct {
-	ID     string
-	Names  []string
-	Status string
-}
-
-func (mng *Manager) CreateAndStart(ctx context.Context, css ContainerStartSettings) (string, error) {
+func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerStartSettings) (string, error) {
 	baseConf := &container.Config{
 		Hostname: css.Host,
 		Image:    css.Image,
@@ -173,8 +160,8 @@ func (mng *Manager) StopAll(ctx context.Context) {
 	wg.Wait()
 }
 
-func (mng *Manager) GetContainer(ctx context.Context, name string) (Container, error) {
-	var result Container
+func (mng *Manager) GetContainer(ctx context.Context, name string) (entities.Container, error) {
+	var result entities.Container
 
 	contOpts := types.ContainerListOptions{All: true}
 

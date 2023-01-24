@@ -38,6 +38,7 @@ func main() {
 	baseCommand.AddCommand(cmd.NewCommandPull(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandShell(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandStart(cli).Command())
+	baseCommand.AddCommand(cmd.NewCommandStolon(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandStop(cli).Command())
 
 	log.Printf("platform: %s/%s", runtime.GOOS, runtime.GOARCH)
