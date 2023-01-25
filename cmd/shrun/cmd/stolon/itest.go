@@ -19,6 +19,7 @@ var (
 type CommandITest struct {
 	command *cobra.Command
 	cli     *client.Client
+	tests   []string
 }
 
 func NewCommandITest(cli *client.Client) *CommandITest {
@@ -31,6 +32,8 @@ func NewCommandITest(cli *client.Client) *CommandITest {
 		Short: "Run stolon integration tests",
 		RunE:  ci.exec,
 	}
+
+	cc.Flags().StringSliceVarP(&ci.tests, "test", "t", []string{}, "test names to run")
 
 	ci.command = cc
 
@@ -59,5 +62,5 @@ func (ci *CommandITest) exec(cc *cobra.Command, _ []string) error {
 		return fmt.Errorf("create case object error: %w", err)
 	}
 
-	return myCase.Exec(ctx)
+	return myCase.WithTests(ci.tests).Exec(ctx)
 }

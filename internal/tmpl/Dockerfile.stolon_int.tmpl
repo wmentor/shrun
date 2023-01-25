@@ -104,6 +104,6 @@ ENV LD_LIBRARY_PATH "/opt/pgpro/sdm-$PG_MAJOR/lib:/usr/lib/x86_64-linux-gnu"
 RUN ldconfig /opt/pgpro/sdm-$PG_MAJOR/lib:/usr/lib/x86_64-linux-gnu
 
 WORKDIR /build/shardman-utils
-RUN --mount=type=cache,target=/go/pkg go mod tidy
+RUN --mount=type=cache,target=/go/pkg go mod tidy && make
 
 ENTRYPOINT ["/goloop/goloop"]

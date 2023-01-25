@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/entities"
@@ -18,6 +19,7 @@ var (
 type Case struct {
 	builder  ImageBuilder
 	cmanager ContainerManager
+	tests    []string
 }
 
 func NewCase(builder ImageBuilder, containerManager ContainerManager) (*Case, error) {
@@ -35,6 +37,11 @@ func NewCase(builder ImageBuilder, containerManager ContainerManager) (*Case, er
 	}
 
 	return myCase, nil
+}
+
+func (c *Case) WithTests(testNames []string) *Case {
+	c.tests = testNames
+	return c
 }
 
 func (c *Case) Exec(ctx context.Context) error {
@@ -59,6 +66,7 @@ func (c *Case) Exec(ctx context.Context) error {
 			"BINDIR=" + baseDir + "/bin",
 			"STKEEPER_BIN=" + baseDir + "/bin/stolon-keeper",
 			"STPROXY_BIN=" + baseDir + "/bin/stolon-proxy",
+			"STSENTINEL_BIN=" + baseDir + "/bin/stolon-sentinel",
 			"STCTL_BIN=" + baseDir + "/bin/stolonctl",
 		},
 	}
@@ -68,7 +76,23 @@ func (c *Case) Exec(ctx context.Context) error {
 		return fmt.Errorf("start container error: %w", err)
 	}
 
-	code, err := c.cmanager.Exec(ctx, cID, baseDir+"/tests/run_integration", "root")
+	maker := strings.Builder{}
+
+	if len(c.tests) > 0 {
+		maker.WriteString("cd " + baseDir)
+		maker.WriteString(" ; ")
+		maker.WriteString("go test -timeout 60m  -v -count 1 -parallel 1")
+		maker.WriteString(" ./tests/integration/utils.go")
+		for _, tn := range c.tests {
+			maker.WriteString(" ./tests/integration/")
+			maker.WriteString(tn)
+			maker.WriteString(".go")
+		}
+	} else {
+		maker.WriteString(baseDir + "/tests/run_integration")
+	}
+
+	code, err := c.cmanager.Exec(ctx, cID, maker.String(), "root")
 	if err != nil {
 		return fmt.Errorf("stolon integration test failed: %w", err)
 	}
