@@ -1,15 +1,12 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
-	"github.com/wmentor/shrun/internal/common"
+	"github.com/wmentor/shrun/internal/cases/doc"
 	"github.com/wmentor/shrun/internal/container"
-	"github.com/wmentor/shrun/internal/entities"
 	"github.com/wmentor/shrun/internal/image"
 )
 
@@ -53,34 +50,10 @@ func (cb *CommandDoc) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	ctx := cc.Context()
-
-	if err = containerManager.RemoveContainer(ctx, "pgdoc"); err != nil {
-		return err
-	}
-
-	if err = imageManager.BuildImage(ctx, common.DockerfilePgDoc, "pgdoc:latest"); err != nil {
-		return err
-	}
-
-	opts := entities.ContainerStartSettings{
-		Image: "pgdoc:latest",
-		Host:  "pgdoc",
-	}
-
-	cid, err := containerManager.CreateAndStart(ctx, opts)
+	myCase, err := doc.NewCase(imageManager, containerManager)
 	if err != nil {
-		log.Printf("start container error: %v", err)
 		return err
 	}
 
-	containerManager.Exec(ctx, cid, "mkdir -p /mntdata/doc ; rm -rf /mntdata/doc/* ; cp -r /build/shardman/contrib/shardman/doc/html/ /mntdata/doc", "root")
-
-	if err = containerManager.RemoveContainer(ctx, "pgdoc"); err != nil {
-		return err
-	}
-
-	log.Printf("doc was saved to %s/doc/html", common.GetVolumeDir())
-
-	return nil
+	return myCase.Exec(cc.Context())
 }

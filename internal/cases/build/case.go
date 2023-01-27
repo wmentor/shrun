@@ -3,6 +3,7 @@ package build
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 
 	"github.com/wmentor/shrun/internal/common"
@@ -37,8 +38,12 @@ func (c *Case) WithBuildPG() *Case {
 }
 
 func (c *Case) Exec(ctx context.Context) error {
-	for _, copyFile := range []string{common.SpecFile, common.RcLocalFile} {
-		if err := common.CopyFile(ctx, filepath.Join(common.GetConfigDir(), copyFile), filepath.Join(common.GetDataDir(), copyFile)); err != nil {
+	files := []string{common.SpecFile, common.RcLocalFile}
+
+	for _, copyFile := range files {
+		dest := filepath.Join(common.GetDataDir(), copyFile)
+		os.Remove(dest)
+		if err := common.CopyFile(ctx, filepath.Join(common.GetConfigDir(), copyFile), dest); err != nil {
 			return err
 		}
 	}
@@ -69,6 +74,10 @@ func (c *Case) Exec(ctx context.Context) error {
 
 	if err := c.builder.BuildImage(ctx, common.DockerfileShardman, "shardman:latest"); err != nil {
 		return err
+	}
+
+	for _, f := range files {
+		os.Remove(filepath.Join(common.GetDataDir(), f))
 	}
 
 	return nil

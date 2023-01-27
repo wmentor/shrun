@@ -19,6 +19,7 @@ import (
 
 	"github.com/wmentor/shrun/internal/cases/pull"
 	"github.com/wmentor/shrun/internal/common"
+	"github.com/wmentor/shrun/internal/entities"
 	"github.com/wmentor/shrun/internal/tmpl"
 )
 
@@ -119,17 +120,7 @@ type specRecord struct {
 	data []byte
 }
 
-type ExportSettings struct {
-	NoGoProxy   bool
-	Repfactor   int
-	Topology    string
-	LogLevel    string
-	ClusterName string
-	EtcdCount   int
-	PgMajor     int
-}
-
-func (mng *Manager) ExportFiles(settings ExportSettings) error {
+func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 	files := []specRecord{
 		{common.SpecFile, tmpl.SrcSpec},
 		{common.RcLocalFile, tmpl.SrcRcLocal},

@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
+	in "github.com/wmentor/shrun/internal/cases/init"
+	"github.com/wmentor/shrun/internal/entities"
 	"github.com/wmentor/shrun/internal/image"
 )
 
@@ -13,15 +15,9 @@ var (
 )
 
 type CommandInit struct {
-	command     *cobra.Command
-	cli         *client.Client
-	noGoProxy   bool
-	repfactor   int
-	topology    string
-	clusterName string
-	etcdCount   int
-	logLevel    string
-	pgMajor     int
+	command  *cobra.Command
+	cli      *client.Client
+	settings entities.ExportFileSettings
 }
 
 func NewCommandInit(cli *client.Client) *CommandInit {
@@ -35,13 +31,13 @@ func NewCommandInit(cli *client.Client) *CommandInit {
 		RunE:  ci.exec,
 	}
 
-	cc.Flags().BoolVar(&ci.noGoProxy, "disable-go-proxy", false, "disable go proxy (default false)")
-	cc.Flags().IntVar(&ci.repfactor, "repfactor", 1, "replication factor (default 1)")
-	cc.Flags().StringVar(&ci.topology, "topology", "cross", "cluster topology (cross or manual, cross as default)")
-	cc.Flags().IntVar(&ci.etcdCount, "etcd-count", 1, "etcd instance count (default 1)")
-	cc.Flags().IntVar(&ci.pgMajor, "pg-major", 14, "postgres major version (default 14)")
-	cc.Flags().StringVar(&ci.logLevel, "log-level", "debug", "log level (default debug)")
-	cc.Flags().StringVar(&ci.clusterName, "cluster", "cluster0", "cluster name (default cluster0)")
+	cc.Flags().BoolVar(&ci.settings.NoGoProxy, "disable-go-proxy", false, "disable go proxy (default false)")
+	cc.Flags().IntVar(&ci.settings.Repfactor, "repfactor", 1, "replication factor (default 1)")
+	cc.Flags().StringVar(&ci.settings.Topology, "topology", "cross", "cluster topology (cross or manual, cross as default)")
+	cc.Flags().IntVar(&ci.settings.EtcdCount, "etcd-count", 1, "etcd instance count (default 1)")
+	cc.Flags().IntVar(&ci.settings.PgMajor, "pg-major", 14, "postgres major version (default 14)")
+	cc.Flags().StringVar(&ci.settings.LogLevel, "log-level", "debug", "log level (default debug)")
+	cc.Flags().StringVar(&ci.settings.ClusterName, "cluster", "cluster0", "cluster name (default cluster0)")
 
 	ci.command = cc
 
@@ -58,15 +54,10 @@ func (ci *CommandInit) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	settings := image.ExportSettings{
-		NoGoProxy:   ci.noGoProxy,
-		Repfactor:   ci.repfactor,
-		Topology:    ci.topology,
-		EtcdCount:   ci.etcdCount,
-		LogLevel:    ci.logLevel,
-		ClusterName: ci.clusterName,
-		PgMajor:     ci.pgMajor,
+	myCase, err := in.NewCase(imageManager, ci.settings)
+	if err != nil {
+		return err
 	}
 
-	return imageManager.ExportFiles(settings)
+	return myCase.Exec(cc.Context())
 }
