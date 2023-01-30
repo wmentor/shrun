@@ -109,8 +109,10 @@ func (mng *Manager) Exec(ctx context.Context, conID string, command string, user
 	return eresp.ExitCode, nil
 }
 
-func Shell(ctx context.Context, containerName string, username string) error {
-	cmd := exec.CommandContext(ctx, "docker", "exec", "-ti", "-u", username, containerName, "/bin/bash")
+func (mng *Manager) ShellCommand(ctx context.Context, containerName string, username string, command []string) error {
+	args := []string{"exec", "-ti", "-u", username, containerName}
+	args = append(args, command...)
+	cmd := exec.CommandContext(ctx, "docker", args...)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

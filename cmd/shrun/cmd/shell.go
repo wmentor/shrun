@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
@@ -53,5 +54,10 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 		return errors.New("unknown username")
 	}
 
-	return container.Shell(cc.Context(), ci.node, ci.user)
+	mng, err := container.NewManager(ci.cli)
+	if err != nil {
+		return fmt.Errorf("create container manager error: %w", err)
+	}
+
+	return mng.ShellCommand(cc.Context(), ci.node, ci.user, []string{"/bin/bash"})
 }

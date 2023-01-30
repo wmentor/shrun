@@ -35,6 +35,7 @@ func main() {
 	baseCommand.AddCommand(cmd.NewCommandDoc(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandInit(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandNodes(cli).Command())
+	baseCommand.AddCommand(cmd.NewCommandPSQL(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandPull(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandShell(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandStart(cli).Command())
