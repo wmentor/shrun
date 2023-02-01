@@ -17,7 +17,7 @@ ENV GOPATH /go
 RUN --mount=type=cache,target=/go/pkg \ 
     go install golang.org/x/tools/cmd/goimports@latest && go install github.com/golang/mock/mockgen@v1.6.0
 
-RUN wget -O /download/golangci-lint-1.45.0-linux-amd64.deb https://github.com/golangci/golangci-lint/releases/download/v1.45.0/golangci-lint-1.45.0-linux-{{ Arch }}.deb && dpkg -i /download/*.deb
+RUN wget -O /download/golangci-lint-1.45.0-linux-{{ Arch }}.deb https://github.com/golangci/golangci-lint/releases/download/v1.45.0/golangci-lint-1.45.0-linux-{{ Arch }}.deb && dpkg -i /download/*.deb
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install less vim \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
