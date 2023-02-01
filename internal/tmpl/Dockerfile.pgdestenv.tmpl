@@ -9,8 +9,8 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     curl \
     ca-certificates \
     vim \
-    && echo "deb [arch=amd64] http://repo.postgrespro.ru/pg_probackup/deb focal main-focal" > /etc/apt/sources.list.d/probackup.list \
-    && curl -fsSL http://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
+#    && echo "deb [arch=amd64] http://repo.postgrespro.ru/pg_probackup/deb focal main-focal" > /etc/apt/sources.list.d/probackup.list \
+#   && curl -fsSL http://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
     && apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install systemd-sysv \
     libev4 \
     libicu66 \
@@ -34,7 +34,7 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     openssh-server \
     tar \
     gdb \
-    pg-probackup-$PG_MAJOR \
+#    pg-probackup-$PG_MAJOR \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
     && apt-get clean -y \
