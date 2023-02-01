@@ -148,6 +148,13 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		data = strings.ReplaceAll(data, "{{ LogLevel }}", settings.LogLevel)
 		data = strings.ReplaceAll(data, "{{ PgMajor }}", strconv.Itoa(settings.PgMajor))
 
+		arch := "amd64"
+		if runtime.GOARCH != "amd64" {
+			arch = "arm64"
+		}
+
+		data = strings.ReplaceAll(data, "{{ Arch }}", arch)
+
 		maker := bytes.NewBuffer(nil)
 		for i := 1; i <= settings.EtcdCount; i++ {
 			if i > 1 {
