@@ -120,7 +120,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		hostname := fmt.Sprintf("%se%d", common.GetObjectPrefix(), i+1)
 
 		cmdParams := []string{
-			"/opt/pgpro/etcd/bin/etcd",
+			"/usr/local/bin/etcd",
 			fmt.Sprintf("--name=%s", hostname),
 			fmt.Sprintf("--initial-advertise-peer-urls=http://%s:2380", hostname),
 			"--listen-peer-urls=http://0.0.0.0:2380",
@@ -132,7 +132,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		log.Printf("start %s", hostname)
 
 		opts := entities.ContainerStartSettings{
-			Image:     "etcd:latest",
+			Image:     "quay.io/coreos/etcd:v3.5.6",
 			Host:      hostname,
 			Cmd:       cmdParams,
 			NetworkID: netID,

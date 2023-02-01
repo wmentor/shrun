@@ -61,9 +61,9 @@ func (c *Case) Exec(ctx context.Context) error {
 			return err
 		}
 
-		if err := c.builder.BuildImage(ctx, common.DockerfileEtcd, "etcd:latest"); err != nil {
+		/*if err := c.builder.BuildImage(ctx, common.DockerfileEtcd, "etcd:latest"); err != nil {
 			return err
-		}
+		}*/
 	}
 
 	if c.buildPG {

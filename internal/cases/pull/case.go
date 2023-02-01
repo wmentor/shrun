@@ -13,7 +13,7 @@ var (
 )
 
 var (
-	requiredImages = []string{"postgres:14", "ubuntu:20.04", "golang:1.18"}
+	requiredImages = []string{"postgres:14", "ubuntu:20.04", "golang:1.18", "quay.io/coreos/etcd:v3.5.6"}
 )
 
 type Case struct {
