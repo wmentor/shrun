@@ -80,6 +80,7 @@ RUN sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /etc/rc.local && chmod 755 /etc/rc.lo
     && chown postgres:postgres /var/log/postgres.log \
     && mkdir -p $APP/data \
     && printf "postgres ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers \
+    && mkdir -p /etc/ssh/ssh_config.d/ \
     && printf "StrictHostKeyChecking no\n" >> /etc/ssh/ssh_config.d/pg.conf \
     && printf "UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config.d/pg.conf \
     && systemctl enable ssh rsyslog \
