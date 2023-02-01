@@ -102,7 +102,7 @@ func (mng *Manager) BuildImage(ctx context.Context, dockerfile string, tag strin
 	if runtime.GOARCH == "amd64" {
 		args = append(args, "build", "--platform", "linux/amd64")
 	} else {
-		args = append(args, "buildx", "build", "--platform", "linux/amd64")
+		args = append(args, "buildx", "build", "--platform", "linux/arm64")
 	}
 
 	args = append(args, "-t", tag, "-f", dir, common.GetDataDir())
