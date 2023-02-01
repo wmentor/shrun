@@ -2,7 +2,7 @@ FROM golang:1.18
 
 #ENV CGO_ENABLED 0
 ENV GOOS linux
-ENV GOARCH amd64
+ENV GOARCH {{ Arch }}
 ENV GOPROXY https://devci-nexus-int.l.postgrespro.ru/repository/goproxy
 ENV GOPRIVATE postgrespro.ru/*
 ENV GONOPROXY none
