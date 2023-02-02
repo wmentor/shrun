@@ -4,9 +4,6 @@ import (
 	_ "embed"
 )
 
-//go:embed Dockerfile.etcd.tmpl
-var SrcEtcd []byte
-
 //go:embed Dockerfile.gobuilder.tmpl
 var SrcGoBuilder []byte
 

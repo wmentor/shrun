@@ -20,6 +20,7 @@ var (
 
 type Case struct {
 	hostname string
+	port     int
 	manager  ContainerManager
 }
 
@@ -38,6 +39,13 @@ func NewCase(manager ContainerManager, hostname string) (*Case, error) {
 	}
 
 	return c, nil
+}
+
+func (c *Case) WithPort(port int) *Case {
+	if port > 0 && port <= 0xffff {
+		c.port = port
+	}
+	return c
 }
 
 func (c *Case) Exec(ctx context.Context) error {
@@ -91,6 +99,10 @@ func (c *Case) getParams() (params, error) {
 	opts.port = resObj.LadleSpec.InitialPort
 	opts.username = resObj.ClusterSpec.Username
 	opts.password = resObj.ClusterSpec.Password
+
+	if c.port != 0 {
+		opts.port = c.port
+	}
 
 	return opts, nil
 }

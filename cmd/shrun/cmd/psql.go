@@ -20,6 +20,7 @@ type CommandPSQL struct {
 	command *cobra.Command
 	cli     *client.Client
 	node    string
+	port    int
 }
 
 func NewCommandPSQL(cli *client.Client) *CommandPSQL {
@@ -34,6 +35,7 @@ func NewCommandPSQL(cli *client.Client) *CommandPSQL {
 	}
 
 	cc.Flags().StringVarP(&ci.node, "node", "n", "shrn1", "node hostname")
+	cc.Flags().IntVarP(&ci.port, "port", "p", 0, "database port (default from sdmspec.json)")
 
 	ci.command = cc
 
@@ -49,6 +51,10 @@ func (ci *CommandPSQL) exec(cc *cobra.Command, _ []string) error {
 		return errors.New("invalid node")
 	}
 
+	if ci.port < 0 || ci.port > 0xffff {
+		return errors.New("invalid port")
+	}
+
 	mng, err := container.NewManager(ci.cli)
 	if err != nil {
 		return fmt.Errorf("create container manager error: %w", err)
@@ -57,6 +63,10 @@ func (ci *CommandPSQL) exec(cc *cobra.Command, _ []string) error {
 	myCase, err := psql.NewCase(mng, ci.node)
 	if err != nil {
 		return err
+	}
+
+	if ci.port != 0 {
+		myCase.WithPort(ci.port)
 	}
 
 	return myCase.Exec(cc.Context())

@@ -34,7 +34,7 @@ func NewCommandShell(cli *client.Client) *CommandShell {
 	}
 
 	cc.Flags().StringVarP(&ci.node, "node", "n", "shrn1", "node name")
-	cc.Flags().StringVarP(&ci.user, "user", "u", "root", "user name")
+	cc.Flags().StringVarP(&ci.user, "user", "u", "postgres", "user name")
 
 	ci.command = cc
 
