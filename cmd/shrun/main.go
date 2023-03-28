@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd/shrun/cmd"
+	"github.com/wmentor/shrun/internal/common"
 )
 
 var (
@@ -43,6 +44,8 @@ func main() {
 	baseCommand.AddCommand(cmd.NewCommandStop(cli).Command())
 
 	log.Printf("platform: %s/%s", runtime.GOOS, runtime.GOARCH)
+
+	baseCommand.PersistentFlags().StringVar(&common.ObjectPrefix, "prefix", "shr", "object prefix")
 
 	baseCommand.ExecuteContext(context.Background())
 }

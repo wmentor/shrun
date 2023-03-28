@@ -9,6 +9,7 @@ import (
 
 	"github.com/wmentor/shrun/cmd"
 	"github.com/wmentor/shrun/internal/cases/nodes/psql"
+	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/container"
 )
 
@@ -34,7 +35,7 @@ func NewCommandPSQL(cli *client.Client) *CommandPSQL {
 		RunE:  ci.exec,
 	}
 
-	cc.Flags().StringVarP(&ci.node, "node", "n", "shrn1", "node hostname")
+	cc.Flags().StringVarP(&ci.node, "node", "n", "", "node hostname")
 	cc.Flags().IntVarP(&ci.port, "port", "p", 0, "database port (default from sdmspec.json)")
 
 	ci.command = cc
@@ -48,7 +49,7 @@ func (ci *CommandPSQL) Command() *cobra.Command {
 
 func (ci *CommandPSQL) exec(cc *cobra.Command, _ []string) error {
 	if ci.node == "" {
-		return errors.New("invalid node")
+		ci.node = common.GetNodeName(1)
 	}
 
 	if ci.port < 0 || ci.port > 0xffff {

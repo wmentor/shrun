@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
+	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/container"
 )
 
@@ -33,7 +34,7 @@ func NewCommandShell(cli *client.Client) *CommandShell {
 		RunE:  ci.exec,
 	}
 
-	cc.Flags().StringVarP(&ci.node, "node", "n", "shrn1", "node name")
+	cc.Flags().StringVarP(&ci.node, "node", "n", "", "node name")
 	cc.Flags().StringVarP(&ci.user, "user", "u", "postgres", "user name")
 
 	ci.command = cc
@@ -47,7 +48,7 @@ func (ci *CommandShell) Command() *cobra.Command {
 
 func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 	if ci.node == "" {
-		return errors.New("unknown node name")
+		ci.node = common.GetNodeName(1)
 	}
 
 	if ci.user == "" {

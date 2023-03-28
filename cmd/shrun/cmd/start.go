@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/client"
+	"github.com/docker/go-units"
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
@@ -32,6 +33,9 @@ type CommandStart struct {
 	skipNodeAdd   bool
 	force         bool
 	updateDockers bool
+	memoryLimit   string
+	cpuLimit      float64
+	maxIOps       int64
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -49,6 +53,9 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVar(&c.skipNodeAdd, "skip-node-add", false, "skip shardmanctl nodes add")
 	cc.Flags().BoolVarP(&c.force, "force", "f", false, "force start. (if already started then restart)")
 	cc.Flags().BoolVarP(&c.updateDockers, "update", "u", false, "rebuild utils and update dockers")
+	cc.Flags().StringVar(&c.memoryLimit, "memory", "", "memory limit")
+	//cc.Flags().Int64Var(&c.maxIOps, "iops", 0, "IOps limit")
+	cc.Flags().Float64Var(&c.cpuLimit, "cpu", 0, "cpu limit")
 
 	c.command = cc
 
@@ -166,6 +173,20 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 			Envs:      envs,
 		}
 
+		if c.memoryLimit != "" {
+			size, err := units.RAMInBytes(c.memoryLimit)
+			if err != nil {
+				return fmt.Errorf("invalid memory limit: %v", c.memoryLimit)
+			}
+			opts.MemoryLimit = size
+		}
+
+		if c.cpuLimit != 0 {
+			opts.CPU = c.cpuLimit
+		}
+
+		opts.MaxIOps = c.maxIOps
+
 		if id, err := manager.CreateAndStart(ctx, opts); err == nil {
 			containerIDs[hostname] = id
 		} else {
@@ -174,7 +195,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		}
 	}
 
-	node1ID := containerIDs["shrn1"]
+	node1ID := containerIDs[common.GetNodeName(1)]
 
 	code, err := manager.Exec(ctx, node1ID, "shardmanctl init -f /etc/shardman/sdmspec.json", "postgres")
 	if err != nil {

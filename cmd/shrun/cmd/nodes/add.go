@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/client"
+	"github.com/docker/go-units"
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
@@ -21,9 +22,12 @@ var (
 )
 
 type CommandAdd struct {
-	command    *cobra.Command
-	cli        *client.Client
-	nodesCount int
+	command     *cobra.Command
+	cli         *client.Client
+	nodesCount  int
+	memoryLimit string
+	cpuLimit    float64
+	maxIOps     int64
 }
 
 func NewCommandAdd(cli *client.Client) *CommandAdd {
@@ -37,6 +41,9 @@ func NewCommandAdd(cli *client.Client) *CommandAdd {
 		RunE:  ci.exec,
 	}
 
+	cc.Flags().StringVar(&ci.memoryLimit, "memory", "", "memory limit")
+	//cc.Flags().Int64Var(&ci.maxIOps, "iops", 0, "max iops")
+	cc.Flags().Float64Var(&ci.cpuLimit, "cpu", 0, "cpu limit")
 	cc.Flags().IntVarP(&ci.nodesCount, "nodes", "n", 1, "add nodes count")
 
 	ci.command = cc
@@ -120,6 +127,20 @@ func (ci *CommandAdd) exec(cc *cobra.Command, _ []string) error {
 			NetworkID: netID,
 			Envs:      envs,
 		}
+
+		if ci.memoryLimit != "" {
+			size, err := units.RAMInBytes(ci.memoryLimit)
+			if err != nil {
+				return fmt.Errorf("invalid memory limit: %v", ci.memoryLimit)
+			}
+			opts.MemoryLimit = size
+		}
+
+		if ci.cpuLimit != 0 {
+			opts.CPU = ci.cpuLimit
+		}
+
+		opts.MaxIOps = ci.maxIOps
 
 		if _, err := mng.CreateAndStart(ctx, opts); err != nil {
 			return fmt.Errorf("create and start %s error: %w", hostname, err)

@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	objectPrefix = "shr"
+	ObjectPrefix = "shr"
 
 	dirConfig = os.Getenv("SHRDM_CONFIG_DIR")
 	dirData   = os.Getenv("SHRDM_DATA_DIR")
@@ -67,7 +67,7 @@ func init() {
 }
 
 func GetObjectPrefix() string {
-	return objectPrefix
+	return ObjectPrefix
 }
 
 func GetConfigDir() string {

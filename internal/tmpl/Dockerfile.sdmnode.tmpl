@@ -94,7 +94,7 @@ RUN sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /etc/rc.local && chmod 755 /etc/rc.lo
 
 RUN mkdir -p /var/lib/pgpro/sdm-${PG_MAJOR}/data \ 
   &&  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" \ 
-  >> /etc/shardman/shardmand-cluster0.env
+  >> /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env
 
 RUN systemctl enable shardmand@${SDM_CLUSTER_NAME}
 
