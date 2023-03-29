@@ -143,9 +143,9 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 
 		data = strings.ReplaceAll(data, "{{ Repfactor }}", strconv.Itoa(settings.Repfactor))
 		data = strings.ReplaceAll(data, "{{ PlacementPolicy }}", settings.Topology)
-		data = strings.ReplaceAll(data, "{{ ClusterName }}", settings.ClusterName)
+		data = strings.ReplaceAll(data, "{{ ClusterName }}", common.ClusterName)
 		data = strings.ReplaceAll(data, "{{ LogLevel }}", settings.LogLevel)
-		data = strings.ReplaceAll(data, "{{ PgMajor }}", strconv.Itoa(settings.PgMajor))
+		data = strings.ReplaceAll(data, "{{ PgMajor }}", strconv.Itoa(common.PgVersion))
 
 		arch := "amd64"
 		if runtime.GOARCH != "amd64" {

@@ -27,7 +27,6 @@ type CommandAdd struct {
 	nodesCount  int
 	memoryLimit string
 	cpuLimit    float64
-	maxIOps     int64
 }
 
 func NewCommandAdd(cli *client.Client) *CommandAdd {
@@ -42,7 +41,6 @@ func NewCommandAdd(cli *client.Client) *CommandAdd {
 	}
 
 	cc.Flags().StringVar(&ci.memoryLimit, "memory", "", "memory limit")
-	//cc.Flags().Int64Var(&ci.maxIOps, "iops", 0, "max iops")
 	cc.Flags().Float64Var(&ci.cpuLimit, "cpu", 0, "cpu limit")
 	cc.Flags().IntVarP(&ci.nodesCount, "nodes", "n", 1, "add nodes count")
 
@@ -139,8 +137,6 @@ func (ci *CommandAdd) exec(cc *cobra.Command, _ []string) error {
 		if ci.cpuLimit != 0 {
 			opts.CPU = ci.cpuLimit
 		}
-
-		opts.MaxIOps = ci.maxIOps
 
 		if _, err := mng.CreateAndStart(ctx, opts); err != nil {
 			return fmt.Errorf("create and start %s error: %w", hostname, err)

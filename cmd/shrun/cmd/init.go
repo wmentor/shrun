@@ -35,9 +35,7 @@ func NewCommandInit(cli *client.Client) *CommandInit {
 	cc.Flags().IntVar(&ci.settings.Repfactor, "repfactor", 1, "replication factor (default 1)")
 	cc.Flags().StringVar(&ci.settings.Topology, "topology", "cross", "cluster topology (cross or manual, cross as default)")
 	cc.Flags().IntVar(&ci.settings.EtcdCount, "etcd-count", 1, "etcd instance count (default 1)")
-	cc.Flags().IntVar(&ci.settings.PgMajor, "pg-major", 14, "postgres major version (default 14)")
 	cc.Flags().StringVar(&ci.settings.LogLevel, "log-level", "debug", "log level (default debug)")
-	cc.Flags().StringVar(&ci.settings.ClusterName, "cluster", "cluster0", "cluster name (default cluster0)")
 
 	ci.command = cc
 

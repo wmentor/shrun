@@ -35,7 +35,7 @@ type CommandStart struct {
 	updateDockers bool
 	memoryLimit   string
 	cpuLimit      float64
-	maxIOps       int64
+	keepPgData    bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -54,7 +54,6 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVarP(&c.force, "force", "f", false, "force start. (if already started then restart)")
 	cc.Flags().BoolVarP(&c.updateDockers, "update", "u", false, "rebuild utils and update dockers")
 	cc.Flags().StringVar(&c.memoryLimit, "memory", "", "memory limit")
-	//cc.Flags().Int64Var(&c.maxIOps, "iops", 0, "IOps limit")
 	cc.Flags().Float64Var(&c.cpuLimit, "cpu", 0, "cpu limit")
 
 	c.command = cc
@@ -184,8 +183,6 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		if c.cpuLimit != 0 {
 			opts.CPU = c.cpuLimit
 		}
-
-		opts.MaxIOps = c.maxIOps
 
 		if id, err := manager.CreateAndStart(ctx, opts); err == nil {
 			containerIDs[hostname] = id

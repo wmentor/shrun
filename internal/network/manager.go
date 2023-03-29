@@ -71,7 +71,6 @@ func (mng *Manager) DeleteNetwork(ctx context.Context) error {
 		}
 		return err
 	}
-
 	return mng.client.NetworkRemove(ctx, id)
 }
 

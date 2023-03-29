@@ -3,9 +3,12 @@ package container
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -53,6 +56,17 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 				Target: "/mntdata",
 			},
 		},
+	}
+
+	if matched, _ := regexp.MatchString("n\\d+$", css.Host); matched {
+		dataDir := filepath.Join(common.GetPgDataDir(), css.Host)
+		os.RemoveAll(dataDir)
+		os.Mkdir(dataDir, 0755)
+		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: dataDir,
+			Target: fmt.Sprintf("/var/lib/pgpro/sdm-%d/data", common.PgVersion),
+		})
 	}
 
 	hostConf.Memory = css.MemoryLimit
@@ -161,6 +175,7 @@ func (mng *Manager) StopAll(ctx context.Context) {
 			} else {
 				log.Printf("remove container %s success", name)
 			}
+			mng.removePgData(name)
 		}(container.ID, container.Names[0], container.State)
 	}
 
@@ -219,7 +234,15 @@ func (mng *Manager) RemoveContainer(ctx context.Context, name string) error {
 		log.Printf("remove container %s success", name)
 	}
 
+	mng.removePgData(name)
+
 	return nil
+}
+
+func (mng *Manager) removePgData(name string) {
+	name = strings.TrimLeft(name, "/")
+	dataDir := filepath.Join(common.GetPgDataDir(), name)
+	os.RemoveAll(dataDir)
 }
 
 func (mng *Manager) isOurContainer(names []string) bool {

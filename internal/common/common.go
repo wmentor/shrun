@@ -26,6 +26,8 @@ const (
 
 var (
 	ObjectPrefix = "shr"
+	PgVersion    = 14
+	ClusterName  = "cluster0"
 
 	dirConfig = os.Getenv("SHRDM_CONFIG_DIR")
 	dirData   = os.Getenv("SHRDM_DATA_DIR")
@@ -64,6 +66,7 @@ func init() {
 	log.Printf("data dir: %s (env SHRDM_DATA_DIR or ~/build)", dirData)
 
 	os.Mkdir(GetVolumeDir(), 0755)
+	os.Mkdir(GetPgDataDir(), 0755)
 }
 
 func GetObjectPrefix() string {
@@ -80,6 +83,10 @@ func GetDataDir() string {
 
 func GetVolumeDir() string {
 	return filepath.Join(GetDataDir(), "mntdata")
+}
+
+func GetPgDataDir() string {
+	return filepath.Join(GetDataDir(), "pgdata")
 }
 
 func CopyFile(ctx context.Context, src string, dest string) error {
