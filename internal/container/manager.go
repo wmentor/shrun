@@ -60,17 +60,6 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 		hostConf.NanoCPUs = int64(1000000000 * css.CPU)
 	}
 
-	//hostConf.BlkioWeight = 100
-
-	/*
-		hostConf.BlkioDeviceReadBps = []*blkiodev.ThrottleDevice{
-			{Path: "/dev/vda1", Rate: uint64(css.MaxIOps)},
-		}
-
-		hostConf.BlkioDeviceWriteBps = []*blkiodev.ThrottleDevice{
-			{Path: "/dev/vda1", Rate: uint64(css.MaxIOps)},
-		}
-	*/
 	resp, err := mng.client.ContainerCreate(ctx, baseConf, hostConf, nil, nil, css.Host)
 	if err != nil {
 		log.Printf("create container %s error: %v", css.Host, err)
