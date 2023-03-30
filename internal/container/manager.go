@@ -61,12 +61,14 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 	if matched, _ := regexp.MatchString("n\\d+$", css.Host); matched {
 		dataDir := filepath.Join(common.GetPgDataDir(), css.Host)
 		os.RemoveAll(dataDir)
-		os.Mkdir(dataDir, 0755)
-		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
-			Type:   mount.TypeBind,
-			Source: dataDir,
-			Target: fmt.Sprintf("/var/lib/pgpro/sdm-%d/data", common.PgVersion),
-		})
+		if css.MountData {
+			os.Mkdir(dataDir, 0755)
+			hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
+				Type:   mount.TypeBind,
+				Source: dataDir,
+				Target: fmt.Sprintf("/var/lib/pgpro/sdm-%d/data", common.PgVersion),
+			})
+		}
 	}
 
 	hostConf.Memory = css.MemoryLimit

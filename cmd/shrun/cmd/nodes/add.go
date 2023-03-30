@@ -27,6 +27,7 @@ type CommandAdd struct {
 	nodesCount  int
 	memoryLimit string
 	cpuLimit    float64
+	mountData   bool
 }
 
 func NewCommandAdd(cli *client.Client) *CommandAdd {
@@ -43,6 +44,7 @@ func NewCommandAdd(cli *client.Client) *CommandAdd {
 	cc.Flags().StringVar(&ci.memoryLimit, "memory", "", "memory limit")
 	cc.Flags().Float64Var(&ci.cpuLimit, "cpu", 0, "cpu limit")
 	cc.Flags().IntVarP(&ci.nodesCount, "nodes", "n", 1, "add nodes count")
+	cc.Flags().BoolVar(&ci.mountData, "mount-data", false, "mount pg data to builddir/pgdata/hostname")
 
 	ci.command = cc
 
@@ -124,6 +126,7 @@ func (ci *CommandAdd) exec(cc *cobra.Command, _ []string) error {
 			Host:      hostname,
 			NetworkID: netID,
 			Envs:      envs,
+			MountData: ci.mountData,
 		}
 
 		if ci.memoryLimit != "" {

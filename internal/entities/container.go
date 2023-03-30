@@ -8,6 +8,7 @@ type ContainerStartSettings struct {
 	Envs        []string
 	MemoryLimit int64
 	CPU         float64
+	MountData   bool
 }
 
 type Container struct {

@@ -35,7 +35,7 @@ type CommandStart struct {
 	updateDockers bool
 	memoryLimit   string
 	cpuLimit      float64
-	keepPgData    bool
+	mountData     bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -55,6 +55,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVarP(&c.updateDockers, "update", "u", false, "rebuild utils and update dockers")
 	cc.Flags().StringVar(&c.memoryLimit, "memory", "", "memory limit")
 	cc.Flags().Float64Var(&c.cpuLimit, "cpu", 0, "cpu limit")
+	cc.Flags().BoolVar(&c.mountData, "mount-data", false, "mount pg data to builddir/pgdata/hostname")
 
 	c.command = cc
 
@@ -170,6 +171,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 			Host:      hostname,
 			NetworkID: netID,
 			Envs:      envs,
+			MountData: c.mountData,
 		}
 
 		if c.memoryLimit != "" {
