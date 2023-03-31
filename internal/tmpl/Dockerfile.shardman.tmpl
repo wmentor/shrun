@@ -11,7 +11,7 @@ WORKDIR $BUILDIR/shardman-utils
 RUN --mount=type=cache,target=/go/pkg \
     go mod tidy && make
 
-FROM sdmnode:latest
+FROM {{ SdmNodeImage }}
 
 ARG PG_MAJOR={{ PgMajor }}
 ARG SDM_CLUSTER_NAME={{ ClusterName }}

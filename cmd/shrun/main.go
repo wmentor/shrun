@@ -45,7 +45,7 @@ func main() {
 
 	log.Printf("platform: %s/%s", runtime.GOOS, runtime.GOARCH)
 
-	baseCommand.PersistentFlags().StringVarP(&common.ObjectPrefix, "prefix", "p", "shr", "object prefix")
+	baseCommand.PersistentFlags().StringVar(&common.ObjectPrefix, "prefix", "shr", "instance prefix")
 	baseCommand.PersistentFlags().StringVar(&common.ClusterName, "cluster", "cluster0", "Shardman cluster name")
 	baseCommand.PersistentFlags().IntVar(&common.PgVersion, "pg-major", 14, "PostgresSQL major version (default 14)")
 

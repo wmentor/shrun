@@ -131,6 +131,7 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		{common.DockerfileShardman, tmpl.SrcShardman},
 		{common.DockerfilePgDoc, tmpl.SrcPgDoc},
 		{common.DockerfileStolonInt, tmpl.SrcStolonInt},
+		{common.GetObjectPrefix() + ".env", tmpl.EnvFile},
 	}
 
 	for _, rec := range files {
@@ -146,6 +147,7 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		data = strings.ReplaceAll(data, "{{ ClusterName }}", common.ClusterName)
 		data = strings.ReplaceAll(data, "{{ LogLevel }}", settings.LogLevel)
 		data = strings.ReplaceAll(data, "{{ PgMajor }}", strconv.Itoa(common.PgVersion))
+		data = strings.ReplaceAll(data, "{{ SdmNodeImage }}", common.GetSdmNodeImageName())
 
 		arch := "amd64"
 		if runtime.GOARCH != "amd64" {

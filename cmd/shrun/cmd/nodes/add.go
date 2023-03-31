@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/docker/docker/client"
 	"github.com/docker/go-units"
@@ -102,30 +101,15 @@ func (ci *CommandAdd) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	etcdList, err := common.GetEtcdList()
-	if err != nil {
-		return err
-	}
-
-	clusterName, _ := common.GetClusterName()
-	logLevel, _ := common.GetLogLevel()
-
-	envs := []string{
-		fmt.Sprintf("CLUSTER_NAME=%s", clusterName),
-		fmt.Sprintf("SDM_CLUSTER_NAME=%s", clusterName),
-		fmt.Sprintf("SDM_LOG_LEVEL=%s", logLevel),
-		fmt.Sprintf("SDM_STORE_ENDPOINTS=%s", strings.Join(etcdList, ",")),
-	}
-
 	for i := 0; i < ci.nodesCount; i++ {
 		hostname := common.GetNodeName(nextNum + i)
 		log.Printf("start %s", hostname)
 
 		opts := entities.ContainerStartSettings{
-			Image:     "shardman:latest",
+			Image:     common.GetNodeContainerName(),
 			Host:      hostname,
 			NetworkID: netID,
-			Envs:      envs,
+			Envs:      common.GetEnvs(),
 			MountData: ci.mountData,
 		}
 

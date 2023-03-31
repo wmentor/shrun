@@ -30,3 +30,6 @@ var SrcRcLocal []byte
 
 //go:embed sdmspec.json.tmpl
 var SrcSpec []byte
+
+//go:embed env.tmpl
+var EnvFile []byte

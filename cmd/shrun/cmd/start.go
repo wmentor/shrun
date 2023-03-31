@@ -152,25 +152,15 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		}
 	}
 
-	clusterName, _ := common.GetClusterName()
-	logLevel, _ := common.GetLogLevel()
-
-	envs := []string{
-		fmt.Sprintf("CLUSTER_NAME=%s", clusterName),
-		fmt.Sprintf("SDM_CLUSTER_NAME=%s", clusterName),
-		fmt.Sprintf("SDM_LOG_LEVEL=%s", logLevel),
-		fmt.Sprintf("SDM_STORE_ENDPOINTS=%s", strings.Join(etcdList, ",")),
-	}
-
 	for i := 0; i < c.nodesCount; i++ {
 		hostname := common.GetNodeName(i + 1)
 		log.Printf("start %s", hostname)
 
 		opts := entities.ContainerStartSettings{
-			Image:     "shardman:latest",
+			Image:     common.GetNodeContainerName(),
 			Host:      hostname,
 			NetworkID: netID,
-			Envs:      envs,
+			Envs:      common.GetEnvs(),
 			MountData: c.mountData,
 		}
 

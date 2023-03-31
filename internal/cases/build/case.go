@@ -60,19 +60,15 @@ func (c *Case) Exec(ctx context.Context) error {
 		if err := c.builder.BuildImage(ctx, common.DockerfilePgDestEnv, "pgdestenv:latest"); err != nil {
 			return err
 		}
-
-		/*if err := c.builder.BuildImage(ctx, common.DockerfileEtcd, "etcd:latest"); err != nil {
-			return err
-		}*/
 	}
 
 	if c.buildPG {
-		if err := c.builder.BuildImage(ctx, common.DockerfileSdmNode, "sdmnode:latest"); err != nil {
+		if err := c.builder.BuildImage(ctx, common.DockerfileSdmNode, common.GetSdmNodeImageName()); err != nil {
 			return err
 		}
 	}
 
-	if err := c.builder.BuildImage(ctx, common.DockerfileShardman, "shardman:latest"); err != nil {
+	if err := c.builder.BuildImage(ctx, common.DockerfileShardman, common.GetNodeContainerName()); err != nil {
 		return err
 	}
 

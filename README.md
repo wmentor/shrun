@@ -55,7 +55,7 @@ shrun build --build-basic --build-pg
 ## Запуск кластера
 
 ```
-shrun start --nodes count [--update|-u] [--force|-f]
+shrun start --nodes count [--update|-u] [--force|-f] [--mount-data]
 ```
 
 Запускает кластер из заданного числа нод (по умолчанию выполняется shardmanctl init + shardmanctl nodes add). 
@@ -68,14 +68,20 @@ shrun start --nodes count [--update|-u] [--force|-f]
 
 В случае успешного запуска в build-каталоге будет создана директория /mntdata, которая будет подмонтирована ко всем запущенным контейнерам.
 
+Если добавить флаг *--mount-data*, в каталоге *<build>/pgdata* будет создан каталог *<container_name>*, который будет подмонтирована к каталогу
+данных Shardman. После остановки через команду *stop*, этот каталог будет удален.
+
 ## Запуск дополнительных нод
 
 ```
-shrun nodes add -n count
+shrun nodes add -n count [--mount-data]
 ```
 
 Поднимает еще заданное число нод Shardman. При этом в кластер они автоматом не добавляются. Команда может
 быть использована только после *shrun start*.
+
+Если добавить флаг *--mount-data*, в каталоге *<build>/pgdata* будет создан каталог *<container_name>*, который будет подмонтирована к каталогу
+данных Shardman. После остановки через команду *stop*, этот каталог будет удален.
 
 ## Удаление заданного числа нод Shardman
 

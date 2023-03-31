@@ -3,6 +3,7 @@ package common
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -105,88 +106,73 @@ func CopyFile(ctx context.Context, src string, dest string) error {
 	return nil
 }
 
-func GetEtcdList() ([]string, error) {
-	srcFile := filepath.Join(GetConfigDir(), "Dockerfile.shardman")
-	rh, err := os.Open(srcFile)
-	if err != nil {
-		log.Printf("open file %s error: %v", srcFile, err)
-		return nil, err
-	}
-	defer rh.Close()
-
-	prefix := "ARG SDM_STORE_ENDPOINTS="
-
-	br := bufio.NewReader(rh)
-	for {
-		str, err := br.ReadString('\n')
-		if err != nil && str == "" {
-			return nil, ErrNotFound
-		}
-
-		str = strings.TrimSpace(str)
-		if strings.HasPrefix(str, prefix) {
-			str = strings.TrimPrefix(str, prefix)
-			return strings.Split(str, ","), nil
-		}
-	}
-}
-
-func GetClusterName() (string, error) {
-	srcFile := filepath.Join(GetConfigDir(), "Dockerfile.shardman")
-	rh, err := os.Open(srcFile)
-	if err != nil {
-		log.Printf("open file %s error: %v", srcFile, err)
-		return "", err
-	}
-	defer rh.Close()
-
-	prefix := "ARG SDM_CLUSTER_NAME="
-
-	br := bufio.NewReader(rh)
-	for {
-		str, err := br.ReadString('\n')
-		if err != nil && str == "" {
-			return "", ErrNotFound
-		}
-
-		str = strings.TrimSpace(str)
-		if strings.HasPrefix(str, prefix) {
-			str = strings.TrimPrefix(str, prefix)
-			return str, nil
-		}
-	}
-}
-
-func GetLogLevel() (string, error) {
-	srcFile := filepath.Join(GetConfigDir(), "Dockerfile.shardman")
-	rh, err := os.Open(srcFile)
-	if err != nil {
-		log.Printf("open file %s error: %v", srcFile, err)
-		return "", err
-	}
-	defer rh.Close()
-
-	prefix := "ARG SDM_LOG_LEVEL="
-
-	br := bufio.NewReader(rh)
-	for {
-		str, err := br.ReadString('\n')
-		if err != nil && str == "" {
-			return "", ErrNotFound
-		}
-
-		str = strings.TrimSpace(str)
-		if strings.HasPrefix(str, prefix) {
-			str = strings.TrimPrefix(str, prefix)
-			return str, nil
-		}
-	}
-}
-
 func GetNodeName(num int) string {
 	return fmt.Sprintf("%sn%d", GetObjectPrefix(), num)
 }
 
 func GetEtcdName(num int) string {
 	return fmt.Sprintf("%se%d", GetObjectPrefix(), num)
+}
+
+func GetNodeContainerName() string {
+	name := "shardman:latest"
+	if GetObjectPrefix() != "shr" {
+		name = GetObjectPrefix() + name
+	}
+	return name
+}
+
+func GetSdmNodeImageName() string {
+	name := "sdmnode:latest"
+	if GetObjectPrefix() != "shr" {
+		name = GetObjectPrefix() + name
+	}
+	return name
+}
+
+func GetEnvFileName() string {
+	return filepath.Join(GetConfigDir(), GetObjectPrefix()+".env")
+}
+
+func defEnvs() []string {
+	return []string{
+		"CLUSTER_NAME=cluster0",
+		"SDM_CLUSTER_NAME=cluster0",
+		"SDM_LOG_LEVEL=debug",
+		"SDM_STORE_ENDPOINTS=http://" + GetEtcdName(1) + ":2379",
+	}
+}
+
+func GetEnvs() []string {
+	res := []string{}
+
+	rh, err := os.Open(GetEnvFileName())
+	if err != nil {
+		return defEnvs()
+	}
+	defer rh.Close()
+
+	br := bufio.NewReader(rh)
+
+	for {
+		str, err := br.ReadString('\n')
+		if err != nil && str == "" {
+			break
+		}
+		if str = strings.TrimSpace(str); str != "" && strings.Contains(str, "=") {
+			res = append(res, str)
+		}
+	}
+
+	return res
+}
+
+func GetEtcdList() ([]string, error) {
+	prefix := "SDM_STORE_ENDPOINTS="
+	for _, env := range GetEnvs() {
+		if strings.HasPrefix(env, prefix) {
+			return strings.Split(strings.TrimPrefix(env, prefix), ","), nil
+		}
+	}
+	return nil, errors.New("etcd list not found")
 }
