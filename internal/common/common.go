@@ -176,3 +176,16 @@ func GetEtcdList() ([]string, error) {
 	}
 	return nil, errors.New("etcd list not found")
 }
+
+func GetGoModDir() string {
+	uinfo, err := user.Current()
+	if err != nil {
+		log.Fatal("get current user info error")
+	}
+
+	modDir := filepath.Join(uinfo.HomeDir, "/gopath/go1.18/pkg")
+
+	os.MkdirAll(modDir, 0755)
+
+	return modDir
+}

@@ -71,6 +71,20 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 		}
 	}
 
+	if css.Host == "gobuilder" {
+		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: common.GetDataDir(),
+			Target: "/repo",
+		})
+
+		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: common.GetGoModDir(),
+			Target: "/go/pkg",
+		})
+	}
+
 	hostConf.Memory = css.MemoryLimit
 	if css.CPU != 0 {
 		hostConf.NanoCPUs = int64(1000000000 * css.CPU)
