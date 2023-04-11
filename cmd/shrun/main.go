@@ -28,6 +28,15 @@ func main() {
 		Use:     "shrun",
 		Short:   "manage shardman cluster for dev",
 		Version: Version,
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
+			if common.WorkArch != common.ArchAmd64 && common.WorkArch != common.ArchArm64 {
+				return common.ErrInvalidArch
+			}
+			if runtime.GOARCH != common.WorkArch {
+				log.Printf("build platform: linux/%s", common.WorkArch)
+			}
+			return nil
+		},
 	}
 
 	baseCommand.CompletionOptions.HiddenDefaultCmd = true
@@ -44,9 +53,10 @@ func main() {
 	baseCommand.AddCommand(cmd.NewCommandStolon(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandStop(cli).Command())
 
-	log.Printf("platform: %s/%s", runtime.GOOS, runtime.GOARCH)
+	log.Printf("host platform: %s/%s", runtime.GOOS, runtime.GOARCH)
 
 	baseCommand.PersistentFlags().StringVar(&common.ObjectPrefix, "prefix", "shr", "instance prefix")
+	baseCommand.PersistentFlags().StringVar(&common.WorkArch, "arch", common.GetDefaultArch(), "build arch (amd64 or arm64)")
 	baseCommand.PersistentFlags().StringVar(&common.ClusterName, "cluster", "cluster0", "Shardman cluster name")
 	baseCommand.PersistentFlags().IntVar(&common.PgVersion, "pg-major", 14, "PostgresSQL major version (default 14)")
 

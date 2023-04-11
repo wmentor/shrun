@@ -21,7 +21,6 @@ ENV \
 
 WORKDIR $BUILDIR
 COPY shardman $BUILDIR/shardman
-#COPY pg_probackup $BUILDIR/shardman/contrib/pg_probackup
 WORKDIR $BUILDIR/shardman
 
 RUN ./configure --enable-debug \
@@ -47,11 +46,6 @@ RUN make -s -j4 install \
     && cd contrib/pg_probackup \
     && make && make install
 
-#WORKDIR $BUILDIR
-#COPY pg_probackup $BUILDIR/shardman/contrib/pg_probackup
-#RUN ls -la $BUILDIR/shardman/contrib/pg_probackup
-#RUN cd $BUILDIR/shardman/contrib/pg_probackup && make && ls -la
-
 FROM pgdestenv:latest
 
 ARG PG_MAJOR={{ PgMajor }}
@@ -62,7 +56,6 @@ ARG SDM_STORE_ENDPOINTS={{ EtcdList }}
 ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
 COPY --from=sdmbuilder /usr/local/pgsql $APP
-#COPY --from=sdmbuilder /build/shardman/contrib/pg_probackup/pg_probackup $APP/bin
 COPY --from=sdmbuilder /build/shardman /build/shardman
 COPY rc.local /etc/rc.local
 COPY sdmspec.json /etc/shardman

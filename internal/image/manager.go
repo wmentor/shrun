@@ -45,7 +45,7 @@ func NewManager(client *client.Client) (*Manager, error) {
 
 func (mng *Manager) PullImage(ctx context.Context, name string) error {
 	opts := types.ImagePullOptions{
-		Platform: "linux/amd64",
+		Platform: "linux/" + common.WorkArch,
 	}
 
 	src := fmt.Sprintf("docker.io/library/%s", name)
@@ -99,10 +99,10 @@ func (mng *Manager) BuildImage(ctx context.Context, dockerfile string, tag strin
 
 	args := make([]string, 0, 10)
 
-	if runtime.GOARCH == "amd64" {
-		args = append(args, "build", "--platform", "linux/amd64")
+	if runtime.GOARCH == common.ArchAmd64 && common.WorkArch == common.ArchAmd64 {
+		args = append(args, "build", "--platform", "linux/"+common.WorkArch)
 	} else {
-		args = append(args, "buildx", "build", "--platform", "linux/arm64")
+		args = append(args, "buildx", "build", "--platform", "linux/"+common.WorkArch)
 	}
 
 	args = append(args, "-t", tag, "-f", dir, common.GetDataDir())
@@ -149,12 +149,7 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		data = strings.ReplaceAll(data, "{{ PgMajor }}", strconv.Itoa(common.PgVersion))
 		data = strings.ReplaceAll(data, "{{ SdmNodeImage }}", common.GetSdmNodeImageName())
 
-		arch := "amd64"
-		if runtime.GOARCH != "amd64" {
-			arch = "arm64"
-		}
-
-		data = strings.ReplaceAll(data, "{{ Arch }}", arch)
+		data = strings.ReplaceAll(data, "{{ Arch }}", common.WorkArch)
 
 		maker := bytes.NewBuffer(nil)
 		for i := 1; i <= settings.EtcdCount; i++ {

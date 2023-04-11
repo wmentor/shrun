@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -23,6 +24,9 @@ const (
 	DockerfileSdmNode    = "Dockerfile.sdmnode"
 	DockerfileShardman   = "Dockerfile.shardman"
 	DockerfileStolonInt  = "Dockerfile.stolon_int"
+
+	ArchAmd64 = "amd64"
+	ArchArm64 = "arm64"
 )
 
 var (
@@ -32,6 +36,8 @@ var (
 
 	dirConfig = os.Getenv("SHRDM_CONFIG_DIR")
 	dirData   = os.Getenv("SHRDM_DATA_DIR")
+
+	WorkArch = ""
 )
 
 func init() {
@@ -68,6 +74,13 @@ func init() {
 
 	os.Mkdir(GetVolumeDir(), 0755)
 	os.Mkdir(GetPgDataDir(), 0755)
+}
+
+func GetDefaultArch() string {
+	if runtime.GOARCH != ArchAmd64 {
+		return ArchArm64
+	}
+	return runtime.GOARCH
 }
 
 func GetObjectPrefix() string {

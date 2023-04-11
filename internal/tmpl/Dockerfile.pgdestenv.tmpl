@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ARG PG_MAJOR=14
+ARG PG_MAJOR={{ PgMajor }}
 ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
 RUN mkdir -p /etc/systemd/system/systemd-logind.service.d /etc/shardman /build /mntdata && chmod -R 0777 /mntdata
@@ -9,8 +9,6 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     curl \
     ca-certificates \
     vim \
-#    && echo "deb [arch=amd64] http://repo.postgrespro.ru/pg_probackup/deb focal main-focal" > /etc/apt/sources.list.d/probackup.list \
-#   && curl -fsSL http://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
     && apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install systemd-sysv \
     libev4 \
     libicu66 \
@@ -35,7 +33,6 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     tar \
     gdb \
     sudo \
-#    pg-probackup-$PG_MAJOR \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
     && apt-get clean -y \
