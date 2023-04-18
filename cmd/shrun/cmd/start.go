@@ -35,7 +35,6 @@ type CommandStart struct {
 	updateDockers bool
 	memoryLimit   string
 	cpuLimit      float64
-	ports         []string
 	debug         bool
 	mountData     bool
 }
@@ -57,7 +56,6 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVarP(&c.updateDockers, "update", "u", false, "rebuild utils and update dockers")
 	cc.Flags().StringVar(&c.memoryLimit, "memory", "", "memory limit")
 	cc.Flags().Float64Var(&c.cpuLimit, "cpu", 0, "cpu limit")
-	cc.Flags().StringSliceVarP(&c.ports, "ports", "p", []string{}, "ports bindings")
 	cc.Flags().BoolVar(&c.debug, "debug", false, "enable debug mode")
 	cc.Flags().BoolVar(&c.mountData, "mount-data", false, "mount pg data to builddir/pgdata/hostname")
 
@@ -162,7 +160,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 
 		ports := make([]string, 0)
 		if c.debug {
-			ports = append(c.ports, fmt.Sprintf("%d:40000", 40000+i))
+			ports = append(ports, fmt.Sprintf("%d:40000", 40000+i))
 		}
 
 		opts := entities.ContainerStartSettings{
