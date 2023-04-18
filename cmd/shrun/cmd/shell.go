@@ -17,10 +17,11 @@ var (
 )
 
 type CommandShell struct {
-	command *cobra.Command
-	cli     *client.Client
-	node    string
-	user    string
+	command             *cobra.Command
+	cli                 *client.Client
+	node                string
+	user                string
+	shardmanctlDebugCmd string
 }
 
 func NewCommandShell(cli *client.Client) *CommandShell {
@@ -36,6 +37,8 @@ func NewCommandShell(cli *client.Client) *CommandShell {
 
 	cc.Flags().StringVarP(&ci.node, "node", "n", "", "node name")
 	cc.Flags().StringVarP(&ci.user, "user", "u", "postgres", "user name")
+	cc.Flags().StringVar(&ci.shardmanctlDebugCmd, "shardmanctl-debug", "", "debug shardmanctl command:"+
+		"such as status")
 
 	ci.command = cc
 
@@ -60,5 +63,13 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 		return fmt.Errorf("create container manager error: %w", err)
 	}
 
-	return mng.ShellCommand(cc.Context(), ci.node, ci.user, []string{"/bin/bash"})
+	cmd := []string{"/bin/bash"}
+
+	if ci.shardmanctlDebugCmd != "" {
+		debugCommand := "dlv --listen=:40000 --headless=true --api-version=2 exec $(which shardmanctl)"
+
+		cmd = append(cmd, "-c", fmt.Sprintf(`%s %s`, debugCommand, ci.shardmanctlDebugCmd))
+	}
+
+	return mng.ShellCommand(cc.Context(), ci.node, ci.user, cmd)
 }
