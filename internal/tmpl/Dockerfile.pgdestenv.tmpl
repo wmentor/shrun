@@ -25,6 +25,7 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     libyaml-libyaml-perl \
     libreadline8 \
     pkg-config \
+    net-tools \
     zlib1g \
     git \
     rsyslog \
@@ -33,6 +34,7 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     tar \
     gdb \
     sudo \
+    telnet \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
     && apt-get clean -y \
