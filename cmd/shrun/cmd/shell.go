@@ -64,8 +64,9 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	cmd := []string{"/bin/bash"}
-	if len(ci.debugCmd) > 0 {
-		debugCMD := strings.Split(ci.debugCmd, " ")
+	debugCMD := strings.Split(ci.debugCmd, " ")
+
+	if len(debugCMD) > 0 {
 		args := debugCMD[1:]
 		debugCommand := strings.Join(append([]string{fmt.Sprintf(
 			"dlv --listen=:40000 --headless=true --api-version=2 exec $(which %s)", debugCMD[0])},
