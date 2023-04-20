@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
@@ -17,11 +18,11 @@ var (
 )
 
 type CommandShell struct {
-	command             *cobra.Command
-	cli                 *client.Client
-	node                string
-	user                string
-	shardmanctlDebugCmd string
+	command  *cobra.Command
+	cli      *client.Client
+	node     string
+	user     string
+	debugCmd string
 }
 
 func NewCommandShell(cli *client.Client) *CommandShell {
@@ -37,8 +38,7 @@ func NewCommandShell(cli *client.Client) *CommandShell {
 
 	cc.Flags().StringVarP(&ci.node, "node", "n", "", "node name")
 	cc.Flags().StringVarP(&ci.user, "user", "u", "postgres", "user name")
-	cc.Flags().StringVar(&ci.shardmanctlDebugCmd, "shardmanctl-debug", "", "debug shardmanctl command:"+
-		"such as status")
+	cc.Flags().StringVar(&ci.debugCmd, "debug", "", "debug command")
 
 	ci.command = cc
 
@@ -64,11 +64,14 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	cmd := []string{"/bin/bash"}
+	if len(ci.debugCmd) > 0 {
+		debugCMD := strings.Split(ci.debugCmd, " ")
+		args := debugCMD[1:]
+		debugCommand := strings.Join(append([]string{fmt.Sprintf(
+			"dlv --listen=:40000 --headless=true --api-version=2 exec $(which %s)", debugCMD[0])},
+			args...), " ")
 
-	if ci.shardmanctlDebugCmd != "" {
-		debugCommand := "dlv --listen=:40000 --headless=true --api-version=2 exec $(which shardmanctl)"
-
-		cmd = append(cmd, "-c", fmt.Sprintf(`%s %s`, debugCommand, ci.shardmanctlDebugCmd))
+		cmd = append(cmd, "-c", fmt.Sprintf(`%s %s`, debugCommand, args))
 	}
 
 	return mng.ShellCommand(cc.Context(), ci.node, ci.user, cmd)
