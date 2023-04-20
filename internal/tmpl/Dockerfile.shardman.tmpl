@@ -9,9 +9,7 @@ COPY shardman-utils $BUILDIR/shardman-utils
 WORKDIR $BUILDIR/shardman-utils
 
 RUN --mount=type=cache,target=/go/pkg \
-    go mod tidy && make
-
-RUN go install github.com/go-delve/delve/cmd/dlv@latest
+    go mod tidy && {{ Build }}
 
 FROM {{ SdmNodeImage }}
 
@@ -24,7 +22,7 @@ ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
 COPY sdmspec.json /etc/shardman
 COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
-COPY --from=gbuilder /go/bin/dlv $APP/bin
+{{ CopyDebugTool }}
 
 RUN mkdir -p /var/lib/pgpro/sdm-14/data \ 
   &&  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" \ 

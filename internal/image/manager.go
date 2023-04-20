@@ -151,6 +151,8 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 
 		data = strings.ReplaceAll(data, "{{ Arch }}", common.WorkArch)
 
+		data = mng.handleDebug(data, settings.Debug)
+
 		maker := bytes.NewBuffer(nil)
 		for i := 1; i <= settings.EtcdCount; i++ {
 			if i > 1 {
@@ -166,6 +168,20 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 	}
 
 	return nil
+}
+
+func (mng *Manager) handleDebug(data string, debug bool) string {
+	if debug {
+		data = strings.ReplaceAll(data, "{{ CopyDebugTool }}", common.CopyDebugToolCmd)
+		data = strings.ReplaceAll(data, "{{ Build }}", common.BuildDebug)
+
+		return data
+	}
+	data = strings.ReplaceAll(data, "{{ InstallDebugTool }}", "")
+	data = strings.ReplaceAll(data, "{{ CopyDebugTool }}", "")
+	data = strings.ReplaceAll(data, "{{ Build }}", common.BuildDefault)
+
+	return data
 }
 
 func (mng *Manager) exportFile(name string, data []byte) error {

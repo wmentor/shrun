@@ -6,4 +6,5 @@ type ExportFileSettings struct {
 	Topology  string
 	LogLevel  string
 	EtcdCount int
+	Debug     bool
 }
