@@ -177,7 +177,6 @@ func (mng *Manager) handleDebug(data string, debug bool) string {
 
 		return data
 	}
-	data = strings.ReplaceAll(data, "{{ InstallDebugTool }}", "")
 	data = strings.ReplaceAll(data, "{{ CopyDebugTool }}", "")
 	data = strings.ReplaceAll(data, "{{ Build }}", common.BuildDefault)
 
