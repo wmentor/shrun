@@ -53,6 +53,7 @@ func main() {
 	baseCommand.AddCommand(cmd.NewCommandStart(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandStolon(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandStop(cli).Command())
+	baseCommand.AddCommand(cmd.NewCommandClean(cli).Command())
 
 	log.Printf("host platform: %s/%s", runtime.GOOS, runtime.GOARCH)
 
