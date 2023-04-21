@@ -64,15 +64,25 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	cmd := []string{"/bin/bash"}
-	debugCMD := strings.Split(ci.debugCmd, " ")
 
-	if len(debugCMD) > 0 {
+	if ci.debugCmd != "" {
+		debugCMD := strings.Split(ci.debugCmd, " ")
 		args := debugCMD[1:]
+
+		for i := range args {
+			if strings.HasPrefix(args[i], "-") {
+				args = append(args)
+				args = append(args[:i+1], args[i:]...)
+				args[i] = "--"
+				break
+			}
+		}
+
 		debugCommand := strings.Join(append([]string{fmt.Sprintf(
-			"dlv --listen=:40000 --headless=true --api-version=2 exec $(which %s)", debugCMD[0])},
+			`dlv --listen=:40000 --headless=true --api-version=2 exec $(which %s)`, debugCMD[0])},
 			args...), " ")
 
-		cmd = append(cmd, "-c", fmt.Sprintf(`%s %s`, debugCommand, args))
+		cmd = append(cmd, "-c", debugCommand)
 	}
 
 	return mng.ShellCommand(cc.Context(), ci.node, ci.user, cmd)
