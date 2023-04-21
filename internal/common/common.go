@@ -18,6 +18,7 @@ const (
 	RcLocalFile          = "rc.local"
 	DockerfileEtcd       = "Dockerfile.etcd"
 	DockerfileGoBuilder  = "Dockerfile.gobuilder"
+	DockerfileGoTpc      = "Dockerfile.gotpc"
 	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
 	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
 	DockerfilePgDoc      = "Dockerfile.pgdoc"

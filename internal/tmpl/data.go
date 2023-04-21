@@ -7,6 +7,9 @@ import (
 //go:embed Dockerfile.gobuilder.tmpl
 var SrcGoBuilder []byte
 
+//go:embed Dockerfile.gotpc.tmpl
+var SrcGoTpc []byte
+
 //go:embed Dockerfile.pgbuildenv.tmpl
 var SrcPgBuildEnv []byte
 

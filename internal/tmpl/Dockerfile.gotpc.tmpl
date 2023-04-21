@@ -1,0 +1,20 @@
+FROM gobuilder:latest as gbuilder
+
+ENV BUILDIR /build
+
+RUN mkdir $BUILDIR
+
+WORKDIR $BUILDIR
+COPY go-tpc $BUILDIR/go-tpc
+WORKDIR $BUILDIR/go-tpc
+
+RUN --mount=type=cache,target=/go/pkg \
+    go mod tidy && make build
+
+WORKDIR $BUILDIR/go-tpc/bin
+
+RUN mv go-tpc /bin/gotpc && ln -s /bin/gotpc /bin/go-tpc
+
+WORKDIR /root
+
+CMD ["/goloop/goloop"]

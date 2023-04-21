@@ -16,6 +16,7 @@ var (
 type Case struct {
 	buildBasic bool
 	buildPG    bool
+	buildGoTpc bool
 	builder    ImageBuilder
 }
 
@@ -34,6 +35,11 @@ func (c *Case) WithBuildBasic() *Case {
 
 func (c *Case) WithBuildPG() *Case {
 	c.buildPG = true
+	return c
+}
+
+func (c *Case) WithGoTpc() *Case {
+	c.buildGoTpc = true
 	return c
 }
 
@@ -58,6 +64,12 @@ func (c *Case) Exec(ctx context.Context) error {
 		}
 
 		if err := c.builder.BuildImage(ctx, common.DockerfilePgDestEnv, "pgdestenv:latest"); err != nil {
+			return err
+		}
+	}
+
+	if c.buildGoTpc || c.buildBasic {
+		if err := c.builder.BuildImage(ctx, common.DockerfileGoTpc, "gotpc:latest"); err != nil {
 			return err
 		}
 	}

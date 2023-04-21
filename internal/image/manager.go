@@ -125,6 +125,7 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		{common.SpecFile, tmpl.SrcSpec},
 		{common.RcLocalFile, tmpl.SrcRcLocal},
 		{common.DockerfileGoBuilder, tmpl.SrcGoBuilder},
+		{common.DockerfileGoTpc, tmpl.SrcGoTpc},
 		{common.DockerfilePgBuildEnv, tmpl.SrcPgBuildEnv},
 		{common.DockerfilePgDestEnv, tmpl.SrcPgDestEnv},
 		{common.DockerfileSdmNode, tmpl.SrcSdmNode},

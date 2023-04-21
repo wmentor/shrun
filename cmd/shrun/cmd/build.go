@@ -18,6 +18,7 @@ type CommandBuild struct {
 	cli           *client.Client
 	buildBasic    bool
 	buildPostgres bool
+	buildGoTpc    bool
 }
 
 func NewCommandBuild(cli *client.Client) *CommandBuild {
@@ -33,6 +34,7 @@ func NewCommandBuild(cli *client.Client) *CommandBuild {
 
 	cc.Flags().BoolVar(&cb.buildBasic, "build-basic", false, "build gobuild, pgbuildenv, pgdestenv")
 	cc.Flags().BoolVar(&cb.buildPostgres, "build-pg", false, "build postgres")
+	cc.Flags().BoolVar(&cb.buildGoTpc, "build-gotpc", false, "build go-tpc image")
 
 	cb.command = cc
 
@@ -60,6 +62,10 @@ func (cb *CommandBuild) exec(cc *cobra.Command, _ []string) error {
 
 	if cb.buildPostgres {
 		myCase.WithBuildPG()
+	}
+
+	if cb.buildGoTpc {
+		myCase.WithGoTpc()
 	}
 
 	return myCase.Exec(cc.Context())
