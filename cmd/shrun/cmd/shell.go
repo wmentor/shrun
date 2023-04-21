@@ -71,9 +71,7 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 
 		for i := range args {
 			if strings.HasPrefix(args[i], "-") {
-				args = append(args)
-				args = append(args[:i+1], args[i:]...)
-				args[i] = "--"
+				args = append(args[:i], append([]string{"--"}, args[i:]...)...)
 				break
 			}
 		}
