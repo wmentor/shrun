@@ -18,6 +18,7 @@ import (
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/docker/go-connections/nat"
 
 	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/entities"
@@ -40,15 +41,22 @@ func NewManager(client *client.Client) (*Manager, error) {
 }
 
 func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerStartSettings) (string, error) {
+	exposedPorts, portBindings, err := nat.ParsePortSpecs(css.Ports)
+	if err != nil {
+		return "", err
+	}
+
 	baseConf := &container.Config{
-		Hostname: css.Host,
-		Image:    css.Image,
-		Cmd:      strslice.StrSlice(css.Cmd),
-		Env:      css.Envs,
+		Hostname:     css.Host,
+		Image:        css.Image,
+		Cmd:          strslice.StrSlice(css.Cmd),
+		ExposedPorts: exposedPorts,
+		Env:          css.Envs,
 	}
 
 	hostConf := &container.HostConfig{
-		Privileged: true,
+		Privileged:   true,
+		PortBindings: portBindings,
 		Mounts: []mount.Mount{
 			{
 				Type:   mount.TypeBind,
@@ -56,6 +64,11 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 				Target: "/mntdata",
 			},
 		},
+	}
+
+	if css.Debug {
+		hostConf.SecurityOpt = []string{"apparmor=unconfined"}
+		hostConf.CapAdd = []string{"SYS_PTRACE"}
 	}
 
 	if matched, _ := regexp.MatchString("n\\d+$", css.Host); matched {

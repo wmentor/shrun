@@ -27,6 +27,10 @@ const (
 
 	ArchAmd64 = "amd64"
 	ArchArm64 = "arm64"
+
+	CopyDebugToolCmd = "COPY --from=gbuilder /go/bin/dlv $APP/bin"
+	BuildDefault     = "make all"
+	BuildDebug       = "make all_debug"
 )
 
 var (

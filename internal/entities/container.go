@@ -5,10 +5,12 @@ type ContainerStartSettings struct {
 	Host        string
 	Cmd         []string
 	NetworkID   string
+	Ports       []string
 	Envs        []string
 	MemoryLimit int64
 	CPU         float64
 	MountData   bool
+	Debug       bool
 }
 
 type Container struct {

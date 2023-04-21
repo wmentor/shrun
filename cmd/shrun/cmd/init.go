@@ -36,6 +36,7 @@ func NewCommandInit(cli *client.Client) *CommandInit {
 	cc.Flags().StringVar(&ci.settings.Topology, "topology", "cross", "cluster topology (cross or manual, cross as default)")
 	cc.Flags().IntVar(&ci.settings.EtcdCount, "etcd-count", 1, "etcd instance count (default 1)")
 	cc.Flags().StringVar(&ci.settings.LogLevel, "log-level", "debug", "log level (default debug)")
+	cc.Flags().BoolVar(&ci.settings.Debug, "debug", false, "enable debug mode")
 
 	ci.command = cc
 
