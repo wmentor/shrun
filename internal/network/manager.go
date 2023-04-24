@@ -8,6 +8,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 
 	"github.com/wmentor/shrun/internal/common"
@@ -47,9 +48,17 @@ func (mng *Manager) CreateNetwork(ctx context.Context) (string, error) {
 			return "", err
 		}
 
+		ipam := network.IPAM{
+			Driver: "default",
+			Config: []network.IPAMConfig{{
+				Subnet: "172.21.0.0/16",
+			}},
+		}
+
 		opts := types.NetworkCreate{
 			CheckDuplicate: true,
 			Driver:         "bridge",
+			IPAM:           &ipam,
 		}
 
 		resp, err := mng.client.NetworkCreate(ctx, mng.networkName, opts)
