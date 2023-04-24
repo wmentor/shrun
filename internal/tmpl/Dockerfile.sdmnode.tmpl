@@ -23,6 +23,8 @@ WORKDIR $BUILDIR
 COPY shardman $BUILDIR/shardman
 WORKDIR $BUILDIR/shardman
 
+RUN make clean || true
+
 RUN ./configure --enable-debug \
     --enable-cassert \
     --enable-nls \
