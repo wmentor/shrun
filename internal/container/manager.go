@@ -15,6 +15,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -103,17 +104,20 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 		hostConf.NanoCPUs = int64(1000000000 * css.CPU)
 	}
 
-	resp, err := mng.client.ContainerCreate(ctx, baseConf, hostConf, nil, nil, css.Host)
+	var nc *network.NetworkingConfig = nil
+
+	if css.NetworkID != "" {
+		nc = &network.NetworkingConfig{
+			EndpointsConfig: map[string]*network.EndpointSettings{
+				css.NetworkID: {NetworkID: css.NetworkID},
+			},
+		}
+	}
+
+	resp, err := mng.client.ContainerCreate(ctx, baseConf, hostConf, nc, nil, css.Host)
 	if err != nil {
 		log.Printf("create container %s error: %v", css.Host, err)
 		return "", err
-	}
-
-	if css.NetworkID != "" {
-		if err := mng.client.NetworkConnect(ctx, css.NetworkID, resp.ID, nil); err != nil {
-			log.Printf("netword connect failed: %v", err)
-			return "", err
-		}
 	}
 
 	if err := mng.client.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
