@@ -143,6 +143,14 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 			data = strings.ReplaceAll(data, "ENV GONOPROXY", "#ENV GONOPROXY")
 		}
 
+		if common.WorkArch == common.ArchArm64 {
+			data = strings.ReplaceAll(data, "{{ UbuntuImage }}", "arm64v8/ubuntu:20.04")
+			data = strings.ReplaceAll(data, "{{ EtcdImage }}", "quay.io/coreos/etcd:v3.5.8-arm64")
+		} else {
+			data = strings.ReplaceAll(data, "{{ UbuntuImage }}", "ubuntu:20.04")
+			data = strings.ReplaceAll(data, "{{ EtcdImage }}", "quay.io/coreos/etcd:v3.5.8")
+		}
+
 		data = strings.ReplaceAll(data, "{{ Repfactor }}", strconv.Itoa(settings.Repfactor))
 		data = strings.ReplaceAll(data, "{{ PlacementPolicy }}", settings.Topology)
 		data = strings.ReplaceAll(data, "{{ ClusterName }}", common.ClusterName)

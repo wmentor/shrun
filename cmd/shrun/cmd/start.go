@@ -140,8 +140,16 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 
 		log.Printf("start %s", hostname)
 
+		etcdImage := ""
+
+		if common.WorkArch == common.ArchArm64 {
+			etcdImage = fmt.Sprintf("quay.io/coreos/etcd:v3.5.8-%s", common.ArchArm64)
+		} else {
+			etcdImage = "quay.io/coreos/etcd:v3.5.8"
+		}
+
 		opts := entities.ContainerStartSettings{
-			Image:     "quay.io/coreos/etcd:v3.5.6",
+			Image:     etcdImage,
 			Host:      hostname,
 			Cmd:       cmdParams,
 			NetworkID: netID,
