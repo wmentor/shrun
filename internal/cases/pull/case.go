@@ -40,7 +40,7 @@ func NewCase(mng ImageManager, forcePull bool) (*Case, error) {
 
 func (c *Case) Exec(ctx context.Context) error {
 	var dockerImages []string
-	if common.ArchArm64 == "arm64" {
+	if common.WorkArch == common.ArchArm64 {
 		dockerImages = armRequiredImages
 	} else {
 		dockerImages = requiredImages
