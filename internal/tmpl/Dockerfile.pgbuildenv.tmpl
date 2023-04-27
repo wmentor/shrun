@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM {{ UbuntuImage }}
 
 ENV BUILDIR /build
 
@@ -39,10 +39,4 @@ RUN set -eux; \
         ssl-cert locales dbus-x11 libipc-run-perl \
         vim \
         gdb \
-        # prometheus exporter
-        libmicrohttpd-dev \
-        # built-in backtrace for bg
-        libunwind-dev \
-        locales \
-        libmicrohttpd12 \
     && apt-get clean all;

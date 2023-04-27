@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM {{ UbuntuImage }}
 
 ARG PG_MAJOR={{ PgMajor }}
 ENV APP /opt/pgpro/sdm-$PG_MAJOR
@@ -35,9 +35,6 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     gdb \
     sudo \
     telnet \
-    # prometheus & bt
-    libmicrohttpd12 \
-    libunwind-dev \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
     && apt-get clean -y \

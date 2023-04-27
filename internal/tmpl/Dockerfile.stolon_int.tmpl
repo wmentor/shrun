@@ -1,4 +1,4 @@
-FROM etcd:latest as myetcd
+FROM {{ EtcdImage }} as myetcd
 
 RUN echo 1
 
@@ -55,7 +55,7 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     curl \
     ca-certificates \
     vim \
-    && echo "deb [arch=amd64] http://repo.postgrespro.ru/pg_probackup/deb focal main-focal" > /etc/apt/sources.list.d/probackup.list \
+    && echo "deb [arch={{ Arch }}] http://repo.postgrespro.ru/pg_probackup/deb focal main-focal" > /etc/apt/sources.list.d/probackup.list \
     && curl -fsSL http://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
     && apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install systemd-sysv \
     libev4 \

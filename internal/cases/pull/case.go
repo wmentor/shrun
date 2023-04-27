@@ -13,7 +13,11 @@ var (
 )
 
 var (
-	requiredImages = []string{"postgres:14", "ubuntu:20.04", "golang:1.18", "quay.io/coreos/etcd:v3.5.6"}
+	requiredImages = []string{"postgres:14", "ubuntu:20.04", "golang:1.18", "quay.io/coreos/etcd:v3.5.8"}
+)
+
+var (
+	armRequiredImages = []string{"arm64v8/postgres:14", "arm64v8/ubuntu:20.04", "golang:1.18", "quay.io/coreos/etcd:v3.5.8-arm64"}
 )
 
 type Case struct {
@@ -35,7 +39,13 @@ func NewCase(mng ImageManager, forcePull bool) (*Case, error) {
 }
 
 func (c *Case) Exec(ctx context.Context) error {
-	for _, img := range requiredImages {
+	var dockerImages []string
+	if common.ArchArm64 == "arm64" {
+		dockerImages = armRequiredImages
+	} else {
+		dockerImages = requiredImages
+	}
+	for _, img := range dockerImages {
 		if !c.forcePull {
 			if err := c.mng.CheckImageExists(ctx, img); err == nil {
 				log.Printf("image %s found. skip\n", img)

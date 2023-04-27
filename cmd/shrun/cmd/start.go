@@ -145,7 +145,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		if common.ArchArm64 == "arm64" {
 			etcdImage = fmt.Sprintf("quay.io/coreos/etcd:v3.5.8-%s", common.ArchArm64)
 		} else {
-			etcdImage = fmt.Sprintf("quay.io/coreos/etcd:v3.5.8-%s", common.ArchAmd64)
+			etcdImage = "quay.io/coreos/etcd:v3.5.8"
 		}
 
 		opts := entities.ContainerStartSettings{
