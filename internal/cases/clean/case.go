@@ -35,11 +35,6 @@ func NewCase(mng ImageRemover) (*Case, error) {
 	}, nil
 }
 
-func (c *Case) WithAllImages(all bool) *Case {
-	c.all = all
-	return c
-}
-
 func (c *Case) WithForce(force bool) *Case {
 	c.force = force
 	return c
