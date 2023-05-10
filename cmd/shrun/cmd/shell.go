@@ -37,7 +37,7 @@ func NewCommandShell(cli *client.Client) *CommandShell {
 	}
 
 	cc.Flags().StringVarP(&ci.node, "node", "n", "", "node name")
-	cc.Flags().StringVarP(&ci.user, "user", "u", "postgres", "user name")
+	cc.Flags().StringVarP(&ci.user, "user", "u", common.PgUser, "user name")
 	cc.Flags().StringVar(&ci.debugCmd, "debug", "", "debug command")
 
 	ci.command = cc
@@ -63,7 +63,7 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 		return fmt.Errorf("create container manager error: %w", err)
 	}
 
-	cmd := []string{"/bin/bash"}
+	cmd := common.CmdBash
 
 	if ci.debugCmd != "" {
 		debugCMD := strings.Split(ci.debugCmd, " ")

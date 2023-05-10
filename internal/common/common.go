@@ -32,12 +32,16 @@ const (
 	CopyDebugToolCmd = "COPY --from=gbuilder /go/bin/dlv $APP/bin"
 	BuildDefault     = "make all"
 	BuildDebug       = "make all_debug"
+
+	PgUser = "postgres"
 )
 
 var (
 	ObjectPrefix = "shr"
 	PgVersion    = 14
 	ClusterName  = "cluster0"
+
+	CmdBash = []string{"/bin/bash"}
 
 	dirConfig = os.Getenv("SHRDM_CONFIG_DIR")
 	dirData   = os.Getenv("SHRDM_DATA_DIR")

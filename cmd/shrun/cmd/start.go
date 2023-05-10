@@ -37,6 +37,7 @@ type CommandStart struct {
 	cpuLimit      float64
 	debug         bool
 	mountData     bool
+	openShell     bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -58,6 +59,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().Float64Var(&c.cpuLimit, "cpu", 0, "cpu limit")
 	cc.Flags().BoolVar(&c.debug, "debug", false, "enable debug mode")
 	cc.Flags().BoolVar(&c.mountData, "mount-data", false, "mount pg data to builddir/pgdata/hostname")
+	cc.Flags().BoolVar(&c.openShell, "shell", false, "open shell")
 
 	c.command = cc
 
@@ -203,7 +205,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 
 	node1ID := containerIDs[common.GetNodeName(1)]
 
-	code, err := manager.Exec(ctx, node1ID, "shardmanctl init -f /etc/shardman/sdmspec.json", "postgres")
+	code, err := manager.Exec(ctx, node1ID, "shardmanctl init -f /etc/shardman/sdmspec.json", common.PgUser)
 	if err != nil {
 		return err
 	}
@@ -220,7 +222,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 			}
 			fmt.Fprintf(maker, "%sn%d", common.GetObjectPrefix(), i+1)
 		}
-		code, err = manager.Exec(ctx, node1ID, "shardmanctl nodes add -n "+maker.String(), "postgres")
+		code, err = manager.Exec(ctx, node1ID, "shardmanctl nodes add -n "+maker.String(), common.PgUser)
 		if err != nil {
 			return err
 		}
@@ -230,6 +232,10 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	log.Printf("mount: %s --> /mntdata", common.GetVolumeDir())
+
+	if c.openShell {
+		return manager.ShellCommand(cc.Context(), common.GetNodeName(1), common.PgUser, common.CmdBash)
+	}
 
 	return nil
 }
