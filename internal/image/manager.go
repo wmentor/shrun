@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -103,6 +104,9 @@ func (mng *Manager) BuildImage(ctx context.Context, dockerfile string, tag strin
 func (mng *Manager) RemoveImage(ctx context.Context, name string, force bool) error {
 	imageId, err := mng.getImageId(ctx, name)
 	if err != nil {
+		if errors.Is(err, common.ErrNotFound) {
+			return nil
+		}
 		return err
 	}
 	response, err := mng.client.ImageRemove(ctx, imageId, types.ImageRemoveOptions{
