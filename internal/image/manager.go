@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -43,6 +44,11 @@ func NewManager(client *client.Client) (*Manager, error) {
 	return mng, nil
 }
 
+func (mng *Manager) BuilderPrune(ctx context.Context, all bool) error {
+	_, err := mng.client.BuildCachePrune(ctx, types.BuildCachePruneOptions{All: all})
+	return err
+}
+
 func (mng *Manager) PullImage(ctx context.Context, name string) error {
 	opts := types.ImagePullOptions{
 		Platform: "linux/" + common.WorkArch,
@@ -75,23 +81,8 @@ func (mng *Manager) PullImage(ctx context.Context, name string) error {
 }
 
 func (mng *Manager) CheckImageExists(ctx context.Context, name string) error {
-	opts := types.ImageListOptions{
-		All: true,
-	}
-	images, err := mng.client.ImageList(ctx, opts)
-	if err != nil {
-		return fmt.Errorf("get image list error: %w", err)
-	}
-
-	for _, image := range images {
-		if len(image.RepoTags) > 0 && image.RepoTags[0] != "<none>:<none>" {
-			if image.RepoTags[0] == name {
-				return nil
-			}
-		}
-	}
-
-	return common.ErrNotFound
+	_, err := mng.getImageId(ctx, name)
+	return err
 }
 
 func (mng *Manager) BuildImage(ctx context.Context, dockerfile string, tag string) error {
@@ -113,6 +104,46 @@ func (mng *Manager) BuildImage(ctx context.Context, dockerfile string, tag strin
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
+}
+
+func (mng *Manager) RemoveImage(ctx context.Context, name string, force bool) error {
+	imageId, err := mng.getImageId(ctx, name)
+	if err != nil {
+		if errors.Is(err, common.ErrNotFound) {
+			return nil
+		}
+		return err
+	}
+	response, err := mng.client.ImageRemove(ctx, imageId, types.ImageRemoveOptions{
+		Force:         force,
+		PruneChildren: false,
+	})
+	if err != nil {
+		return err
+	}
+	for _, x := range response {
+		log.Println("deleted: ", x.Deleted)
+		log.Println("untagged: ", x.Untagged)
+	}
+	return nil
+}
+
+func (mng *Manager) getImageId(ctx context.Context, name string) (string, error) {
+	opts := types.ImageListOptions{
+		All: true,
+	}
+	images, err := mng.client.ImageList(ctx, opts)
+	if err != nil {
+		return "", fmt.Errorf("get image list error: %w", err)
+	}
+	for _, image := range images {
+		if len(image.RepoTags) > 0 && image.RepoTags[0] != "<none>:<none>" {
+			if image.RepoTags[0] == name {
+				return image.ID, nil
+			}
+		}
+	}
+	return "", common.ErrNotFound
 }
 
 type specRecord struct {
