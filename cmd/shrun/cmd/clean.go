@@ -33,7 +33,7 @@ func NewCommandClean(cli *client.Client) *CommandClean {
 		RunE:  cp.exec,
 	}
 
-	cc.Flags().BoolVarP(&cp.force, "force", "f", false, "stopping cluster")
+	cc.Flags().BoolVarP(&cp.force, "force", "f", false, "force image deleting")
 
 	cp.command = cc
 
