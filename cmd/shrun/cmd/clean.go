@@ -45,25 +45,24 @@ func (c *CommandClean) Command() *cobra.Command {
 }
 
 func (c *CommandClean) exec(cc *cobra.Command, _ []string) error {
-	if c.force {
-		manager, err := container.NewManager(c.cli)
-		if err != nil {
-			return err
-		}
-
-		networker, err := network.NewManager(c.cli)
-		if err != nil {
-			return err
-		}
-
-		stopCase, err := stop.NewCase(manager, networker)
-		if err != nil {
-			return err
-		}
-		if err := stopCase.Exec(cc.Context()); err != nil {
-			return err
-		}
+	manager, err := container.NewManager(c.cli)
+	if err != nil {
+		return err
 	}
+
+	networker, err := network.NewManager(c.cli)
+	if err != nil {
+		return err
+	}
+
+	stopCase, err := stop.NewCase(manager, networker)
+	if err != nil {
+		return err
+	}
+	if err := stopCase.Exec(cc.Context()); err != nil {
+		return err
+	}
+
 	imageManager, err := image.NewManager(c.cli)
 	if err != nil {
 		return err
