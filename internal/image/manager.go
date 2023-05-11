@@ -44,6 +44,11 @@ func NewManager(client *client.Client) (*Manager, error) {
 	return mng, nil
 }
 
+func (mng *Manager) BuilderPrune(ctx context.Context, all bool) error {
+	_, err := mng.client.BuildCachePrune(ctx, types.BuildCachePruneOptions{All: all})
+	return err
+}
+
 func (mng *Manager) PullImage(ctx context.Context, name string) error {
 	opts := types.ImagePullOptions{
 		Platform: "linux/" + common.WorkArch,

@@ -21,13 +21,12 @@ var (
 )
 
 type Case struct {
-	mng   ImageRemover
-	all   bool
+	mng   Cleaner
 	force bool
 }
 
-func NewCase(mng ImageRemover) (*Case, error) {
-	if mng == nil || mng == ImageRemover(nil) {
+func NewCase(mng Cleaner) (*Case, error) {
+	if mng == nil || mng == Cleaner(nil) {
 		return nil, ErrInvalidManager
 	}
 	return &Case{
@@ -52,6 +51,9 @@ func (c *Case) Exec(ctx context.Context) error {
 		if err := c.mng.RemoveImage(ctx, image, c.force); err != nil {
 			return err
 		}
+	}
+	if err := c.mng.BuilderPrune(ctx, true); err != nil {
+		return err
 	}
 	return nil
 }
