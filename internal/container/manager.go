@@ -65,6 +65,7 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 				Target: "/mntdata",
 			},
 		},
+		ShmSize: common.ShmSize,
 	}
 
 	if css.Debug {

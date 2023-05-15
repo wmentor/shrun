@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/docker/go-units"
 )
 
 const (
@@ -34,6 +36,8 @@ const (
 	BuildDebug       = "make all_debug"
 
 	PgUser = "postgres"
+
+	ShmSize = units.MB * 512
 )
 
 var (
