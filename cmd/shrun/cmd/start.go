@@ -138,6 +138,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 			fmt.Sprintf("--advertise-client-urls=http://%s:2379", hostname),
 			"--listen-client-urls=http://0.0.0.0:2379",
 			fmt.Sprintf("--initial-cluster=%s", etcdClusterMaker.String()),
+			"--auto-compaction-retention=5m",
 		}
 
 		log.Printf("start %s", hostname)
