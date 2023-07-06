@@ -26,7 +26,6 @@ const (
 	DockerfilePgDoc      = "Dockerfile.pgdoc"
 	DockerfileSdmNode    = "Dockerfile.sdmnode"
 	DockerfileShardman   = "Dockerfile.shardman"
-	DockerfileStolonInt  = "Dockerfile.stolon_int"
 
 	ArchAmd64 = "amd64"
 	ArchArm64 = "arm64"
@@ -209,7 +208,7 @@ func GetGoModDir() string {
 		log.Fatal("get current user info error")
 	}
 
-	modDir := filepath.Join(uinfo.HomeDir, "/gopath/go1.18/pkg")
+	modDir := filepath.Join(uinfo.HomeDir, "/gopath/go1.20/pkg")
 
 	os.MkdirAll(modDir, 0755)
 
