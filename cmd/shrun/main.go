@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	Version = "0.1"
+	Version = "0.2"
 )
 
 func main() {
@@ -51,7 +51,6 @@ func main() {
 	baseCommand.AddCommand(cmd.NewCommandPull(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandShell(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandStart(cli).Command())
-	baseCommand.AddCommand(cmd.NewCommandStolon(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandStop(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandClean(cli).Command())
 

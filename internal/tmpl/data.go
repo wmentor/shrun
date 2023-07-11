@@ -25,9 +25,6 @@ var SrcSdmNode []byte
 //go:embed Dockerfile.shardman.tmpl
 var SrcShardman []byte
 
-//go:embed Dockerfile.stolon_int.tmpl
-var SrcStolonInt []byte
-
 //go:embed rc.local.tmpl
 var SrcRcLocal []byte
 

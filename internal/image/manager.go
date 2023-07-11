@@ -162,7 +162,6 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		{common.DockerfileSdmNode, tmpl.SrcSdmNode},
 		{common.DockerfileShardman, tmpl.SrcShardman},
 		{common.DockerfilePgDoc, tmpl.SrcPgDoc},
-		{common.DockerfileStolonInt, tmpl.SrcStolonInt},
 		{common.GetObjectPrefix() + ".env", tmpl.EnvFile},
 	}
 

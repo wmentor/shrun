@@ -8,4 +8,5 @@ build:
 	go build -o ./bin/shrun cmd/shrun/main.go
 
 install:
+	mkdir -p $(GOPATH)/bin/
 	cp -f ./bin/shrun $(GOPATH)/bin/
