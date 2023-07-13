@@ -13,11 +13,11 @@ var (
 )
 
 var (
-	requiredImages = []string{"postgres:14", "ubuntu:20.04", "golang:1.18", "quay.io/coreos/etcd:v3.5.8"}
+	requiredImages = []string{"postgres:14", "ubuntu:20.04", "golang:1.20.5", "quay.io/coreos/etcd:v3.5.8"}
 )
 
 var (
-	armRequiredImages = []string{"arm64v8/postgres:14", "arm64v8/ubuntu:20.04", "golang:1.18", "quay.io/coreos/etcd:v3.5.8-arm64"}
+	armRequiredImages = []string{"arm64v8/postgres:14", "arm64v8/ubuntu:20.04", "golang:1.20.5", "quay.io/coreos/etcd:v3.5.8-arm64"}
 )
 
 type Case struct {

@@ -26,7 +26,7 @@ func NewCommandPull(cli *client.Client) *CommandPull {
 
 	cc := &cobra.Command{
 		Use:   "pull",
-		Short: "pull images (golang:1.18, ubuntu:20.04)",
+		Short: "pull images (golang:1.20.5, ubuntu:20.04)",
 		RunE:  cp.exec,
 	}
 
