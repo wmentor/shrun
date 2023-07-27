@@ -1,70 +1,52 @@
 {
-   "LadleSpec":{
-      "PGsInitialPort": 5432,
-      "Repfactor": {{ Repfactor }},
-      "SilkInitialPort": 8000,
-      "PlacementPolicy": "{{ PlacementPolicy }}"
+   "ConfigVersion": "1",
+   "Repfactor": {{ Repfactor }},
+   "PlacementPolicy": "{{ PlacementPolicy }}",
+   "PgSuAuthMethod": "scram-sha-256",
+   "PgSuPassword": "12345",
+   "PgSuUsername": "postgres",
+   "PgReplAuthMethod": "scram-sha-256",
+   "PgReplPassword": "12345",
+   "PgReplUsername": "repluser",
+   "ShardSpec": {
+    "proxyCheckInterval": "5s",
+    "proxyTimeout": "30s",
+    "synchronousReplication": true,
+    "usePgrewind": true,
+    "pgParameters": {
+     "csn_snapshot_defer_time": "300",
+     "enable_csn_snapshot": "on",
+     "enable_csn_wal": "true",
+     "log_line_prefix": "%m [%r][%p]",
+     "log_min_messages": "INFO",
+     "log_statement": "none",
+     "maintenance_work_mem": "1GB",
+     "max_connections": "600",
+     "max_files_per_process": "65535",
+     "max_logical_replication_workers": "9",
+     "max_prepared_transactions": "200",
+     "max_wal_size": "4GB",
+     "max_worker_processes": "16",
+     "min_wal_size": "512MB",
+     "postgres_fdw.subplan_pushdown": "off",
+     "shardman.query_engine_mode": "text",
+     "shardman.silk_num_workers": "8",
+     "shared_buffers": "4GB",
+     "shared_preload_libraries": "postgres_fdw, shardman"
+    },
+    "pgHBA": [
+     "host replication postgres 0.0.0.0/0 scram-sha-256",
+     "host replication postgres ::0/0 scram-sha-256"
+    ],
+    "automaticPgRestart": true,
+    "masterDemotionEnabled": false
    },
-   "ClusterSpec":{
-      "PgSuAuthMethod": "scram-sha-256",
-      "PgSuUsername":"postgres",
-      "PgSuPassword": "12345",
-      "PgReplUsername":"repluser",
-      "PgReplAuthMethod":"scram-sha-256",
-      "PgReplPassword":"12345",
-      "UseProxy":true,
-      "FDWOptions" :{
-          "async_capable": "true",
-          "batch_size": "100",
-          "fetch_size": "50000",
-          "fdw_tuple_cost": "0.2"
-      },
-      "StolonSpec":{
-         "synchronousReplication": true,
-         "minSynchronousStandbys": 0,
-         "maxSynchronousStandbys": 4,
-         "pgHBA":[
-            "host all postgres 0.0.0.0/0 scram-sha-256",
-            "host replication postgres 0.0.0.0/0 scram-sha-256",
-            "host replication postgres ::0/0 scram-sha-256",
-            "host all repluser 0.0.0.0/0 scram-sha-256"
-         ],
-         "pgParameters":{
-            "log_statement":"none",
-            "log_line_prefix":"%m [%r][%p]",
-            "log_destination": "stderr",
-            "log_filename": "pg.log",
-            "logging_collector": "on",
-            "log_checkpoints": "false",
-            "shardman.silk_enabled": "true",
-            "#log_min_duration_statement": "0",
-            "log_min_error_statement":"info",
-            "log_min_messages":"info",
-            "log_error_verbosity":"terse",
-            "wal_level":"logical",
-            "max_connections":"90",
-            "max_worker_processes":"20",
-            "max_files_per_process": "2000",
-            "max_logical_replication_workers": "9",
-            "shared_preload_libraries":"postgres_fdw, shardman",
-            "default_transaction_isolation":"repeatable read",
-            "max_prepared_transactions":"200",
-            "csn_snapshot_defer_time":"300",
-            "enable_csn_snapshot":"true",
-            "enable_csn_wal":"true",
-            "enable_partitionwise_aggregate":"on",
-            "enable_partitionwise_join":"on",
-            "foreign_join_fast_path":"on",
-            "postgres_fdw.enforce_foreign_join":"on",
-            "postgres_fdw.estimate_as_hashjoin":"on",
-            "postgres_fdw.estimate_indexscan":"on",
-            "postgres_fdw.optimize_cursors":"on",
-            "postgres_fdw.subplan_pushdown":"on",
-            "postgres_fdw.use_twophase":"on"
-         },
-         "newConfig" : {
-                 "dataChecksums":true
-         }
-      }
+   "FDWOptions": {
+    "async_capable": "on",
+    "batch_size": "100",
+    "connect_timeout": "5",
+    "fdw_tuple_cost": "0.2",
+    "fetch_size": "50000",
+    "tcp_user_timeout": "10000"
    }
-}
+  }
