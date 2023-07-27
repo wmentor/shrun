@@ -66,13 +66,9 @@ type params struct {
 }
 
 type specData struct {
-	LadleSpec struct {
-		InitialPort int `json:"PGsInitialPort"`
-	} `json:"LadleSpec"`
-	ClusterSpec struct {
-		Username string `json:"PgSuUsername"`
-		Password string `json:"PgSuPassword"`
-	} `json:"ClusterSpec"`
+	InitialPort int    `json:"PGsInitialPort"`
+	Username    string `json:"PgSuUsername"`
+	Password    string `json:"PgSuPassword"`
 }
 
 func (c *Case) makeConnstr(opts params) string {
@@ -96,12 +92,16 @@ func (c *Case) getParams() (params, error) {
 		return opts, fmt.Errorf("decode %s file error: %w", specFile, err)
 	}
 
-	opts.port = resObj.LadleSpec.InitialPort
-	opts.username = resObj.ClusterSpec.Username
-	opts.password = resObj.ClusterSpec.Password
+	opts.port = resObj.InitialPort
+	opts.username = resObj.Username
+	opts.password = resObj.Password
 
 	if c.port != 0 {
 		opts.port = c.port
+	}
+
+	if opts.port == 0 {
+		opts.port = common.DefaultPgPort
 	}
 
 	return opts, nil

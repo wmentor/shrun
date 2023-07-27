@@ -37,6 +37,8 @@ const (
 	PgUser = "postgres"
 
 	ShmSize = units.MB * 512
+
+	DefaultPgPort = 5432
 )
 
 var (
