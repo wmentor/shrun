@@ -163,6 +163,7 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		{common.DockerfileShardman, tmpl.SrcShardman},
 		{common.DockerfilePgDoc, tmpl.SrcPgDoc},
 		{common.GetObjectPrefix() + ".env", tmpl.EnvFile},
+		{common.OpenSSLConf, tmpl.SrcOpenSSL},
 	}
 
 	for _, rec := range files {

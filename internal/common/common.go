@@ -16,6 +16,7 @@ import (
 )
 
 const (
+	OpenSSLConf          = "openssl.conf"
 	SpecFile             = "sdmspec.json"
 	RcLocalFile          = "rc.local"
 	DockerfileEtcd       = "Dockerfile.etcd"
