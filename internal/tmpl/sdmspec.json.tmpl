@@ -57,11 +57,12 @@
     "strictUserHBA": true,
     "pgHBA": [
      "hostssl all postgres 0.0.0.0/0 cert clientcert=verify-full",
+     "hostssl all repluser 0.0.0.0/0 cert clientcert=verify-full",
      "hostssl replication postgres 0.0.0.0/0 cert clientcert=verify-full",
+     "hostssl replication postgres ::0/0 cert clientcert=verify-full",
      "hostssl replication repluser 0.0.0.0/0 cert clientcert=verify-full",
-     "hostnossl all postgres 0.0.0.0/0 scram-sha-256",
-     "host replication postgres 0.0.0.0/0 scram-sha-256",
-     "host replication postgres ::0/0 scram-sha-256",
+     "hostssl replication repluser ::0/0 cert clientcert=verify-full",
+     "hostnossl all all 0.0.0.0/0 reject",
      "local postgres postgres scram-sha-256",
      "local replication repluser scram-sha-256"
     ],
