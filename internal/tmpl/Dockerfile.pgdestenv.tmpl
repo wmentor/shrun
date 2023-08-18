@@ -34,6 +34,8 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     tar \
     gdb \
     sudo \
+    libcurl4-nss-dev \
+    libcurl4 \
     telnet \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
