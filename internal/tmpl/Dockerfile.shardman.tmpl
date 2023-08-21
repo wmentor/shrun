@@ -11,11 +11,11 @@ WORKDIR $BUILDIR/shardman-utils
 RUN --mount=type=cache,target=/go/pkg \
     go mod tidy && {{ Build }}
 
-FROM {{ SdmNodeImage }}
+FROM {{ ImageSdmNode }}
 
-ARG PG_MAJOR={{ PgMajor }}
+ARG PG_MAJOR={{ PgMajorVersion }}
 ARG SDM_CLUSTER_NAME={{ ClusterName }}
-ARG SDM_LOG_LEVEL={{ LogLevel }}
+ARG SDM_LOG_LEVEL={{ ClusterLogLevel }}
 ARG SDM_STORE_ENDPOINTS={{ EtcdList }}
 
 ENV APP /opt/pgpro/sdm-$PG_MAJOR

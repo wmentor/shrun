@@ -12,11 +12,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/wmentor/tt"
 
 	"github.com/wmentor/shrun/internal/cases/pull"
 	"github.com/wmentor/shrun/internal/common"
@@ -169,27 +169,25 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 	for _, rec := range files {
 		data := string(rec.data)
 
-		if settings.NoGoProxy {
-			data = strings.ReplaceAll(data, "ENV GOPROXY", "#ENV GOPROXY")
-			data = strings.ReplaceAll(data, "ENV GONOPROXY", "#ENV GONOPROXY")
-		}
+		vars := tt.MakeVars()
+
+		vars.Set("GoArch", common.WorkArch)
+		vars.Set("GoEnableProxy", !settings.NoGoProxy)
 
 		if common.WorkArch == common.ArchArm64 {
-			data = strings.ReplaceAll(data, "{{ UbuntuImage }}", "arm64v8/ubuntu:20.04")
-			data = strings.ReplaceAll(data, "{{ EtcdImage }}", "quay.io/coreos/etcd:v3.5.8-arm64")
+			vars.Set("ImageUbuntu", "arm64v8/ubuntu:20.04")
+			vars.Set("ImageEtcd", "quay.io/coreos/etcd:v3.5.9-arm64")
 		} else {
-			data = strings.ReplaceAll(data, "{{ UbuntuImage }}", "ubuntu:20.04")
-			data = strings.ReplaceAll(data, "{{ EtcdImage }}", "quay.io/coreos/etcd:v3.5.8")
+			vars.Set("ImageUbuntu", "ubuntu:20.04")
+			vars.Set("ImageEtcd", "quay.io/coreos/etcd:v3.5.9")
 		}
 
-		data = strings.ReplaceAll(data, "{{ Repfactor }}", strconv.Itoa(settings.Repfactor))
-		data = strings.ReplaceAll(data, "{{ PlacementPolicy }}", settings.Topology)
-		data = strings.ReplaceAll(data, "{{ ClusterName }}", common.ClusterName)
-		data = strings.ReplaceAll(data, "{{ LogLevel }}", settings.LogLevel)
-		data = strings.ReplaceAll(data, "{{ PgMajor }}", strconv.Itoa(common.PgVersion))
-		data = strings.ReplaceAll(data, "{{ SdmNodeImage }}", common.GetSdmNodeImageName())
-
-		data = strings.ReplaceAll(data, "{{ Arch }}", common.WorkArch)
+		vars.Set("ClusterRepfactor", settings.Repfactor)
+		vars.Set("ClusterPlacementPolicy", settings.Topology)
+		vars.Set("ClusterName", common.ClusterName)
+		vars.Set("ClusterLogLevel", settings.LogLevel)
+		vars.Set("PgMajorVersion", common.PgVersion)
+		vars.Set("ImageSdmNode", common.GetSdmNodeImageName())
 
 		data = mng.handleDebug(data, settings.Debug)
 
@@ -200,9 +198,14 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 			}
 			fmt.Fprintf(maker, "http://%se%d:2379", common.GetObjectPrefix(), i)
 		}
-		data = strings.ReplaceAll(data, "{{ EtcdList }}", maker.String())
+		vars.Set("EtcdList", maker.String())
 
-		if err := mng.exportFile(filepath.Join(common.GetConfigDir(), rec.name), []byte(data)); err != nil {
+		res, err := tt.RenderString(data, vars)
+		if err != nil {
+			return fmt.Errorf("render %s error: %w", rec.name, err)
+		}
+
+		if err := mng.exportFile(filepath.Join(common.GetConfigDir(), rec.name), res); err != nil {
 			return fmt.Errorf("export %s error: %w", rec.name, err)
 		}
 	}

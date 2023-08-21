@@ -44,18 +44,16 @@ RUN ./configure --enable-debug \
  
 RUN make -s -j4 install \
     && make -s -C contrib install \ 
-    # pg_probackup community edition
+    # pg_probackup community edition if not synced another
     && if [ ! -d contrib/pg_probackup ]; then GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch REL_2_5 https://github.com/postgrespro/pg_probackup.git contrib/pg_probackup ; fi \
-    # pg_probackup eenterprise edition with s3 support
-    # && GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch ee-2.6.5 https://git.postgrespro.ru/eepbk/pg_probackup_ee.git contrib/pg_probackup \
     && cd contrib/pg_probackup \
     && make && make install
 
 FROM pgdestenv:latest
 
-ARG PG_MAJOR={{ PgMajor }}
+ARG PG_MAJOR={{ PgMajorVersion }}
 ARG SDM_CLUSTER_NAME={{ ClusterName }}
-ARG SDM_LOG_LEVEL={{ LogLevel }}
+ARG SDM_LOG_LEVEL={{ ClusterLogLevel }}
 ARG SDM_STORE_ENDPOINTS={{ EtcdList }}
 
 ENV SAN DNS:shrn1,DNS:shrn2,DNS:shrn3,DNS:shrn4,DNS:shrn5,DNS:shrn6,DNS:shrn7,DNS:shrn8,DNS:shrn9,DNS:shrn10,DNS:shrn11,DNS:shrn12,DNS:localhost

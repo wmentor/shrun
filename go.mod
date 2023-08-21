@@ -7,9 +7,12 @@ require (
 	github.com/docker/go-connections v0.4.0
 	github.com/docker/go-units v0.5.0
 	github.com/spf13/cobra v1.6.1
+	github.com/wmentor/tt v1.0.1
 )
 
 require (
+	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
+	github.com/CloudyKit/jet v2.1.2+incompatible // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

@@ -2,10 +2,14 @@ FROM golang:1.20.5
 
 #ENV CGO_ENABLED 0
 ENV GOOS linux
-ENV GOARCH {{ Arch }}
+ENV GOARCH {{ GoArch }}
+
+{{ if GoEnableProxy }}
 ENV GOPROXY https://devci-nexus-int.l.postgrespro.ru/repository/goproxy
-ENV GOPRIVATE postgrespro.ru/*
 ENV GONOPROXY none
+{{ end }}
+
+ENV GOPRIVATE postgrespro.ru/*
 ENV GONOSUMDB postgrespro.ru/*
 
 RUN mkdir -p /repo /goloop /download /go/pkg /go/bin
@@ -21,7 +25,7 @@ RUN --mount=type=cache,target=/go/pkg \
 
 ENV LINTVER 1.53.3
 
-RUN wget -O /download/golangci-lint-$LINTVER-linux-{{ Arch }}.deb https://github.com/golangci/golangci-lint/releases/download/v$LINTVER/golangci-lint-$LINTVER-linux-{{ Arch }}.deb && dpkg -i /download/*.deb
+RUN wget -O /download/golangci-lint-$LINTVER-linux-{{ GoArch }}.deb https://github.com/golangci/golangci-lint/releases/download/v$LINTVER/golangci-lint-$LINTVER-linux-{{ GoArch }}.deb && dpkg -i /download/*.deb
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install less vim \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
