@@ -44,7 +44,7 @@ func (c *Case) WithGoTpc() *Case {
 }
 
 func (c *Case) Exec(ctx context.Context) error {
-	files := []string{common.SpecFile, common.RcLocalFile}
+	files := []string{common.SpecFile, common.RcLocalFile, common.OpenSSLConf}
 
 	for _, copyFile := range files {
 		dest := filepath.Join(common.GetDataDir(), copyFile)

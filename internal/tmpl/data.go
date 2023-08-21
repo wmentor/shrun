@@ -33,3 +33,6 @@ var SrcSpec []byte
 
 //go:embed env.tmpl
 var EnvFile []byte
+
+//go:embed openssl.conf
+var SrcOpenSSL []byte

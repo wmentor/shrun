@@ -12,11 +12,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/wmentor/tt"
 
 	"github.com/wmentor/shrun/internal/cases/pull"
 	"github.com/wmentor/shrun/internal/common"
@@ -163,34 +163,48 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		{common.DockerfileShardman, tmpl.SrcShardman},
 		{common.DockerfilePgDoc, tmpl.SrcPgDoc},
 		{common.GetObjectPrefix() + ".env", tmpl.EnvFile},
+		{common.OpenSSLConf, tmpl.SrcOpenSSL},
 	}
 
 	for _, rec := range files {
 		data := string(rec.data)
 
-		if settings.NoGoProxy {
-			data = strings.ReplaceAll(data, "ENV GOPROXY", "#ENV GOPROXY")
-			data = strings.ReplaceAll(data, "ENV GONOPROXY", "#ENV GONOPROXY")
-		}
+		vars := tt.MakeVars()
+
+		vars.Set("GoVersion", common.GoVersion)
+		vars.Set("GoLintVersion", common.GoLintVersion)
+		vars.Set("GoMockVersion", common.GoMockVersion)
+		vars.Set("GoArch", common.WorkArch)
+		vars.Set("GoEnableProxy", !settings.NoGoProxy)
+
+		vars.Set("UbuntuVersion", common.UbuntuVersion)
+		vars.Set("EtcdVersion", common.EtcdVersion)
 
 		if common.WorkArch == common.ArchArm64 {
-			data = strings.ReplaceAll(data, "{{ UbuntuImage }}", "arm64v8/ubuntu:20.04")
-			data = strings.ReplaceAll(data, "{{ EtcdImage }}", "quay.io/coreos/etcd:v3.5.8-arm64")
+			vars.Set("ImageUbuntu", "arm64v8/ubuntu:"+common.UbuntuVersion)
+			vars.Set("ImageEtcd", "quay.io/coreos/etcd:v"+common.EtcdVersion+"-arm64")
 		} else {
-			data = strings.ReplaceAll(data, "{{ UbuntuImage }}", "ubuntu:20.04")
-			data = strings.ReplaceAll(data, "{{ EtcdImage }}", "quay.io/coreos/etcd:v3.5.8")
+			vars.Set("ImageUbuntu", "ubuntu:"+common.UbuntuVersion)
+			vars.Set("ImageEtcd", "quay.io/coreos/etcd:v"+common.EtcdVersion)
 		}
 
-		data = strings.ReplaceAll(data, "{{ Repfactor }}", strconv.Itoa(settings.Repfactor))
-		data = strings.ReplaceAll(data, "{{ PlacementPolicy }}", settings.Topology)
-		data = strings.ReplaceAll(data, "{{ ClusterName }}", common.ClusterName)
-		data = strings.ReplaceAll(data, "{{ LogLevel }}", settings.LogLevel)
-		data = strings.ReplaceAll(data, "{{ PgMajor }}", strconv.Itoa(common.PgVersion))
-		data = strings.ReplaceAll(data, "{{ SdmNodeImage }}", common.GetSdmNodeImageName())
+		vars.Set("EnableSSL", common.EnableSSL)
+		vars.Set("EnableStrictHBA", common.EnableStrictHBA)
 
-		data = strings.ReplaceAll(data, "{{ Arch }}", common.WorkArch)
+		vars.Set("ClusterRepfactor", settings.Repfactor)
+		vars.Set("ClusterPlacementPolicy", settings.Topology)
+		vars.Set("ClusterName", common.ClusterName)
+		vars.Set("ClusterLogLevel", settings.LogLevel)
+		vars.Set("PgMajorVersion", common.PgVersion)
+		vars.Set("ImageSdmNode", common.GetSdmNodeImageName())
 
-		data = mng.handleDebug(data, settings.Debug)
+		if settings.Debug {
+			vars.Set("CopyDebugTool", common.CopyDebugToolCmd)
+			vars.Set("Build", common.BuildDebug)
+		} else {
+			vars.Set("CopyDebugTool", "")
+			vars.Set("Build", common.BuildDefault)
+		}
 
 		maker := bytes.NewBuffer(nil)
 		for i := 1; i <= settings.EtcdCount; i++ {
@@ -199,27 +213,19 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 			}
 			fmt.Fprintf(maker, "http://%se%d:2379", common.GetObjectPrefix(), i)
 		}
-		data = strings.ReplaceAll(data, "{{ EtcdList }}", maker.String())
+		vars.Set("EtcdList", maker.String())
 
-		if err := mng.exportFile(filepath.Join(common.GetConfigDir(), rec.name), []byte(data)); err != nil {
+		res, err := tt.RenderString(data, vars)
+		if err != nil {
+			return fmt.Errorf("render %s error: %w", rec.name, err)
+		}
+
+		if err := mng.exportFile(filepath.Join(common.GetConfigDir(), rec.name), res); err != nil {
 			return fmt.Errorf("export %s error: %w", rec.name, err)
 		}
 	}
 
 	return nil
-}
-
-func (mng *Manager) handleDebug(data string, debug bool) string {
-	if debug {
-		data = strings.ReplaceAll(data, "{{ CopyDebugTool }}", common.CopyDebugToolCmd)
-		data = strings.ReplaceAll(data, "{{ Build }}", common.BuildDebug)
-
-		return data
-	}
-	data = strings.ReplaceAll(data, "{{ CopyDebugTool }}", "")
-	data = strings.ReplaceAll(data, "{{ Build }}", common.BuildDefault)
-
-	return data
 }
 
 func (mng *Manager) exportFile(name string, data []byte) error {

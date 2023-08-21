@@ -6,6 +6,7 @@ import (
 
 	"github.com/wmentor/shrun/cmd"
 	in "github.com/wmentor/shrun/internal/cases/init"
+	"github.com/wmentor/shrun/internal/common"
 	"github.com/wmentor/shrun/internal/entities"
 	"github.com/wmentor/shrun/internal/image"
 )
@@ -32,6 +33,8 @@ func NewCommandInit(cli *client.Client) *CommandInit {
 	}
 
 	cc.Flags().BoolVar(&ci.settings.NoGoProxy, "disable-go-proxy", false, "disable go proxy (default false)")
+	cc.Flags().BoolVar(&common.EnableSSL, "ssl", false, "enable ssl")
+	cc.Flags().BoolVar(&common.EnableStrictHBA, "strict-hba", false, "enable strictUserHBA")
 	cc.Flags().IntVar(&ci.settings.Repfactor, "repfactor", 1, "replication factor (default 1)")
 	cc.Flags().StringVar(&ci.settings.Topology, "topology", "cross", "cluster topology (cross or manual, cross as default)")
 	cc.Flags().IntVar(&ci.settings.EtcdCount, "etcd-count", 1, "etcd instance count (default 1)")

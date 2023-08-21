@@ -60,18 +60,30 @@ func (c *Case) Exec(ctx context.Context) error {
 }
 
 type params struct {
-	port     int
-	username string
-	password string
+	port       int
+	username   string
+	password   string
+	cert       string
+	key        string
+	rootCert   string
+	verifyMode string
 }
 
 type specData struct {
 	InitialPort int    `json:"PGsInitialPort"`
 	Username    string `json:"PgSuUsername"`
 	Password    string `json:"PgSuPassword"`
+	Cert        string `json:"PgSuSSLCert"`
+	Key         string `json:"PgSuSSLKey"`
+	VerifyMode  string `json:"PgSSLMode"`
+	RootCert    string `json:"PgSSLRootCert"`
 }
 
 func (c *Case) makeConnstr(opts params) string {
+	if opts.cert != "" {
+		return fmt.Sprintf("dbname=postgres host=%s port=%d user=%s sslcert=%s sslkey=%s sslrootcert=%s sslmode=%s",
+			c.hostname, opts.port, opts.username, opts.cert, opts.key, opts.rootCert, opts.verifyMode)
+	}
 	return fmt.Sprintf("dbname=postgres host=%s password=%s port=%d user=%s", c.hostname, opts.password, opts.port, opts.username)
 }
 
@@ -95,6 +107,10 @@ func (c *Case) getParams() (params, error) {
 	opts.port = resObj.InitialPort
 	opts.username = resObj.Username
 	opts.password = resObj.Password
+	opts.cert = resObj.Cert
+	opts.key = resObj.Key
+	opts.rootCert = resObj.RootCert
+	opts.verifyMode = resObj.VerifyMode
 
 	if c.port != 0 {
 		opts.port = c.port
