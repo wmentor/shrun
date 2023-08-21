@@ -40,6 +40,12 @@ const (
 	ShmSize = units.MB * 512
 
 	DefaultPgPort = 5432
+
+	GoVersion     = "1.20.5"
+	GoLintVersion = "1.53.3"
+	GoMockVersion = "1.6.0"
+	UbuntuVersion = "20.04"
+	EtcdVersion   = "3.5.9"
 )
 
 var (
@@ -48,6 +54,9 @@ var (
 	ClusterName  = "cluster0"
 
 	CmdBash = []string{"/bin/bash"}
+
+	EnableSSL       = false
+	EnableStrictHBA = false
 
 	dirConfig = os.Getenv("SHRDM_CONFIG_DIR")
 	dirData   = os.Getenv("SHRDM_DATA_DIR")

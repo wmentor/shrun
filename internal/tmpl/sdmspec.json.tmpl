@@ -3,17 +3,15 @@
    "Repfactor": {{ ClusterRepfactor }},
    "PlacementPolicy": "{{ ClusterPlacementPolicy }}",
    "PgSuAuthMethod": "scram-sha-256",
-   "#PgSuPassword": "12345",
    "PgSuUsername": "postgres",
-   "PgSuSSLKey": "/var/lib/postgresql/.ssh/client.key",
-   "PgSuSSLCert": "/var/lib/postgresql/.ssh/client.crt",
+   {{ if EnableSSL }}"PgSuSSLKey": "/var/lib/postgresql/.ssh/client.key",
+   "PgSuSSLCert": "/var/lib/postgresql/.ssh/client.crt",{{ else }}"PgSuPassword": "12345",{{ end }}
    "PgReplAuthMethod": "scram-sha-256",
-   "#PgReplPassword": "12345",
    "PgReplUsername": "repluser",
-   "PgReplSSLKey": "/var/lib/postgresql/.ssh/repluser.key",
+   {{ if EnableSSL }}"PgReplSSLKey": "/var/lib/postgresql/.ssh/repluser.key",
    "PgReplSSLCert": "/var/lib/postgresql/.ssh/repluser.crt",
    "PgSSLRootCert": "/var/lib/postgresql/.ssh/ca.crt",
-   "PgSSLMode": "verify-full",
+   "PgSSLMode": "verify-full",{{ else }}"PgReplPassword": "12345",{{ end }}
    "ShardSpec": {
     "proxyCheckInterval": "5s",
     "proxyTimeout": "30s",
@@ -21,11 +19,11 @@
     "minSynchronousStandbys": 0,
     "maxSynchronousStandbys": 4,
     "usePgrewind": true,
-    "pgParameters": {
+    "pgParameters": { {{ if EnableSSL }}
      "ssl": "on",
      "ssl_cert_file": "/var/lib/postgresql/.ssh/server.crt",
      "ssl_key_file": "/var/lib/postgresql/.ssh/server.key",
-     "ssl_ca_file": "/var/lib/postgresql/.ssh/ca.crt",
+     "ssl_ca_file": "/var/lib/postgresql/.ssh/ca.crt",{{ end }}
      "csn_snapshot_defer_time": "300",
      "enable_csn_snapshot": "on",
      "enable_csn_wal": "true",
@@ -51,10 +49,10 @@
      "shardman.silk_num_workers": "8",
      "shared_buffers": "4GB",
      "shared_preload_libraries": "postgres_fdw, shardman"
-    },
-    "strictUserHBA": true,
+    },{{ if EnableSSL || EnableStrictHBA }}
+    "strictUserHBA": true,{{ end }}
     "pgHBA": [
-     "hostssl all postgres 0.0.0.0/0 cert clientcert=verify-full",
+     {{ if EnableSSL }}"hostssl all postgres 0.0.0.0/0 cert clientcert=verify-full",
      "hostssl all repluser 0.0.0.0/0 cert clientcert=verify-full",
      "hostssl replication postgres 0.0.0.0/0 cert clientcert=verify-full",
      "hostssl replication postgres ::0/0 cert clientcert=verify-full",
@@ -62,7 +60,8 @@
      "hostssl replication repluser ::0/0 cert clientcert=verify-full",
      "hostnossl all all 0.0.0.0/0 reject",
      "local postgres postgres scram-sha-256",
-     "local replication repluser scram-sha-256"
+     "local replication repluser scram-sha-256"{{ else }}"host replication postgres 0.0.0.0/0 scram-sha-256",
+     "host replication postgres ::0/0 scram-sha-256"{{ end }}
     ],
     "automaticPgRestart": true,
     "masterDemotionEnabled": false

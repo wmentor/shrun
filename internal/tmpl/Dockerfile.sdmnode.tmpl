@@ -85,7 +85,7 @@ RUN sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /etc/rc.local && chmod 755 /etc/rc.lo
     && mkdir -p /var/lib/postgresql \
     && mkdir -p /var/lib/postgresql/.ssh/ \
     && ssh-keygen -t rsa -N '' -f  /var/lib/postgresql/.ssh/id_rsa \
-    && openssl req -new -x509 -days 3650 -nodes -text -out /var/lib/postgresql/.ssh/ca.crt -keyout /var/lib/postgresql/.ssh/ca.key -subj "/CN=root-ca" \
+    {{ if EnableSSL }}&& openssl req -new -x509 -days 3650 -nodes -text -out /var/lib/postgresql/.ssh/ca.crt -keyout /var/lib/postgresql/.ssh/ca.key -subj "/CN=root-ca" \
     && CN=localhost SAN=$SAN  openssl req -new -nodes -out /var/lib/postgresql/.ssh/server.csr -keyout /var/lib/postgresql/.ssh/server.key -extensions server -config /tmp/openssl.conf \
     && CN=localhost SAN=$SAN openssl x509 -req -in /var/lib/postgresql/.ssh/server.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/server.crt -extensions server -extfile /tmp/openssl.conf \
     && openssl req -new -nodes -out /var/lib/postgresql/.ssh/client.csr -keyout /var/lib/postgresql/.ssh/client.key -subj "/CN=postgres" \
@@ -94,8 +94,8 @@ RUN sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /etc/rc.local && chmod 755 /etc/rc.lo
     && openssl x509 -req -in /var/lib/postgresql/.ssh/repluser.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/repluser.crt \    
     && cp /var/lib/postgresql/.ssh/server.crt /usr/local/share/ca-certificates \
     && cp /var/lib/postgresql/.ssh/ca.crt /usr/local/share/ca-certificates \
-    && cat /var/lib/postgresql/.ssh/id_rsa.pub > /var/lib/postgresql/.ssh/authorized_keys \
-    && chmod 0600 /var/lib/postgresql/.ssh/id_rsa /var/lib/postgresql/.ssh/server.key \
+    {{ end }}&& cat /var/lib/postgresql/.ssh/id_rsa.pub > /var/lib/postgresql/.ssh/authorized_keys \
+    && chmod 0600 /var/lib/postgresql/.ssh/id_rsa {{ if EnableSSL }}/var/lib/postgresql/.ssh/server.key{{ end }} \
     && chown postgres:postgres -R /var/lib/postgresql/.ssh \
     && cp -r /var/lib/postgresql/.ssh/ /root/.ssh \
     && touch /var/lib/postgresql/.psql_history \
