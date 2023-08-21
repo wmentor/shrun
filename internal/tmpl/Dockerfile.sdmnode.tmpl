@@ -45,9 +45,9 @@ RUN ./configure --enable-debug \
 RUN make -s -j4 install \
     && make -s -C contrib install \ 
     # pg_probackup community edition
-    # && GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch REL_2_5 https://github.com/postgrespro/pg_probackup.git contrib/pg_probackup \
+    && if [ ! -d contrib/pg_probackup ]; then GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch REL_2_5 https://github.com/postgrespro/pg_probackup.git contrib/pg_probackup ; fi \
     # pg_probackup eenterprise edition with s3 support
-    && GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch ee-2.6.5 https://git.postgrespro.ru/eepbk/pg_probackup_ee.git contrib/pg_probackup \
+    # && GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch ee-2.6.5 https://git.postgrespro.ru/eepbk/pg_probackup_ee.git contrib/pg_probackup \
     && cd contrib/pg_probackup \
     && make && make install
 
