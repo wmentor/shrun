@@ -16,17 +16,21 @@ import (
 )
 
 const (
-	OpenSSLConf          = "openssl.conf"
-	SpecFile             = "sdmspec.json"
-	RcLocalFile          = "rc.local"
-	DockerfileEtcd       = "Dockerfile.etcd"
-	DockerfileGoBuilder  = "Dockerfile.gobuilder"
-	DockerfileGoTpc      = "Dockerfile.gotpc"
-	DockerfilePgBuildEnv = "Dockerfile.pgbuildenv"
-	DockerfilePgDestEnv  = "Dockerfile.pgdestenv"
-	DockerfilePgDoc      = "Dockerfile.pgdoc"
-	DockerfileSdmNode    = "Dockerfile.sdmnode"
-	DockerfileShardman   = "Dockerfile.shardman"
+	OpenSSLConf           = "openssl.conf"
+	PrometheusConf        = "prometheus.yml"
+	SpecFile              = "sdmspec.json"
+	RcLocalFile           = "rc.local"
+	DockerfileEtcd        = "Dockerfile.etcd"
+	DockerfileGoBuilder   = "Dockerfile.gobuilder"
+	DockerfileGoTpc       = "Dockerfile.gotpc"
+	DockerfilePgBuildEnv  = "Dockerfile.pgbuildenv"
+	DockerfilePgDestEnv   = "Dockerfile.pgdestenv"
+	DockerfilePgDoc       = "Dockerfile.pgdoc"
+	DockerfileSdmNode     = "Dockerfile.sdmnode"
+	DockerfileShardman    = "Dockerfile.shardman"
+	DockerfilePrometheus  = "Dockerfile.prometheus"
+	DockerfileGrafana     = "Dockerfile.grafana"
+	GrafanaDatasourceConf = "datasource.yaml"
 
 	ArchAmd64 = "amd64"
 	ArchArm64 = "arm64"
@@ -225,4 +229,21 @@ func GetGoModDir() string {
 	os.MkdirAll(modDir, 0755)
 
 	return modDir
+}
+
+func getGrafanaFile() string {
+	return filepath.Join(GetConfigDir(), ".grafana")
+}
+
+func SaveGrafanaStatus(enable bool) {
+	if enable {
+		os.WriteFile(getGrafanaFile(), []byte("1"), 0755)
+	} else {
+		os.Remove(getGrafanaFile())
+	}
+}
+
+func GetGrafanaStatus() bool {
+	_, err := os.Lstat(getGrafanaFile())
+	return err == nil
 }

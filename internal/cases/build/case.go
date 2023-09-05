@@ -44,7 +44,7 @@ func (c *Case) WithGoTpc() *Case {
 }
 
 func (c *Case) Exec(ctx context.Context) error {
-	files := []string{common.SpecFile, common.RcLocalFile, common.OpenSSLConf}
+	files := []string{common.SpecFile, common.RcLocalFile, common.OpenSSLConf, common.PrometheusConf, common.GrafanaDatasourceConf}
 
 	for _, copyFile := range files {
 		dest := filepath.Join(common.GetDataDir(), copyFile)
@@ -64,6 +64,14 @@ func (c *Case) Exec(ctx context.Context) error {
 		}
 
 		if err := c.builder.BuildImage(ctx, common.DockerfilePgDestEnv, "pgdestenv:latest"); err != nil {
+			return err
+		}
+
+		if err := c.builder.BuildImage(ctx, common.DockerfilePrometheus, "prometheus:latest"); err != nil {
+			return err
+		}
+
+		if err := c.builder.BuildImage(ctx, common.DockerfileGrafana, "grafana:latest"); err != nil {
 			return err
 		}
 	}

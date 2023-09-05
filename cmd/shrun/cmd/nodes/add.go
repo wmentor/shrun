@@ -128,6 +128,12 @@ func (ci *CommandAdd) exec(cc *cobra.Command, _ []string) error {
 		if _, err := mng.CreateAndStart(ctx, opts); err != nil {
 			return fmt.Errorf("create and start %s error: %w", hostname, err)
 		}
+
+		if common.GetGrafanaStatus() {
+			if err := mng.StartPrometheusExporter(ctx, nextNum+i, netID); err != nil {
+				return fmt.Errorf("failed start %s error: %w", hostname, err)
+			}
+		}
 	}
 
 	return nil

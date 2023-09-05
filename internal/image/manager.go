@@ -164,9 +164,15 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		{common.DockerfilePgDoc, tmpl.SrcPgDoc},
 		{common.GetObjectPrefix() + ".env", tmpl.EnvFile},
 		{common.OpenSSLConf, tmpl.SrcOpenSSL},
+		{common.PrometheusConf, tmpl.SrcPrometheusConf},
+		{common.DockerfilePrometheus, tmpl.SrcPrometheus},
+		{common.DockerfileGrafana, tmpl.SrcGrafana},
+		{common.GrafanaDatasourceConf, tmpl.SrcGrafanaDatasource},
 	}
 
 	for _, rec := range files {
+		log.Printf("generate %s", rec.name)
+
 		data := string(rec.data)
 
 		vars := tt.MakeVars()
@@ -214,6 +220,8 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 			fmt.Fprintf(maker, "http://%se%d:2379", common.GetObjectPrefix(), i)
 		}
 		vars.Set("EtcdList", maker.String())
+		vars.Set("RangeLimit", []string{"1", "2", "3", "4", "5", "6", "7", "8"})
+		vars.Set("CommonPrefix", common.GetObjectPrefix())
 
 		res, err := tt.RenderString(data, vars)
 		if err != nil {

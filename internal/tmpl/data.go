@@ -36,3 +36,15 @@ var EnvFile []byte
 
 //go:embed openssl.conf
 var SrcOpenSSL []byte
+
+//go:embed prometheus.yml.tmpl
+var SrcPrometheusConf []byte
+
+//go:embed Dockerfile.prometheus.tmpl
+var SrcPrometheus []byte
+
+//go:embed Dockerfile.grafana.tmpl
+var SrcGrafana []byte
+
+//go:embed datasource.yaml.tmpl
+var SrcGrafanaDatasource []byte

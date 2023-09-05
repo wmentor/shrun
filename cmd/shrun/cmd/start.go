@@ -38,6 +38,7 @@ type CommandStart struct {
 	debug         bool
 	mountData     bool
 	openShell     bool
+	grafana       bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -60,6 +61,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVar(&c.debug, "debug", false, "enable debug mode")
 	cc.Flags().BoolVar(&c.mountData, "mount-data", false, "mount pg data to builddir/pgdata/hostname")
 	cc.Flags().BoolVar(&c.openShell, "shell", false, "open shell")
+	cc.Flags().BoolVar(&c.grafana, "grafana", false, "use grafana")
 
 	c.command = cc
 
@@ -234,6 +236,14 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 
 	log.Printf("mount: %s --> /mntdata", common.GetVolumeDir())
 
+	common.SaveGrafanaStatus(c.grafana)
+
+	if c.grafana {
+		if err := c.runGrafana(ctx, netID, manager); err != nil {
+			return err
+		}
+	}
+
 	if c.openShell {
 		return manager.ShellCommand(cc.Context(), common.GetNodeName(1), common.PgUser, common.CmdBash)
 	}
@@ -269,4 +279,54 @@ func (c *CommandStart) update(ctx context.Context) error {
 	}
 
 	return myCase.Exec(ctx)
+}
+
+func (c *CommandStart) runGrafana(ctx context.Context, netID string, manager *container.Manager) error {
+	hostname := common.GetObjectPrefix() + "prometheus"
+	log.Printf("start %s", hostname)
+
+	ports := []string{"9090:9090"}
+
+	opts := entities.ContainerStartSettings{
+		Image:     "prometheus:latest",
+		Host:      hostname,
+		NetworkID: netID,
+		Ports:     ports,
+		Envs:      common.GetEnvs(),
+		MountData: c.mountData,
+	}
+
+	if _, err := manager.CreateAndStart(ctx, opts); err != nil {
+		return err
+	}
+
+	hostname = common.GetObjectPrefix() + "grafana"
+	log.Printf("start %s", hostname)
+
+	ports = []string{"3000:3000"}
+
+	envs := common.GetEnvs()
+
+	envs = append(envs, "GF_SECURITY_ADMIN_PASSWORD=admin", "GF_SECURITY_ADMIN_USER=admin")
+
+	opts = entities.ContainerStartSettings{
+		Image:     "grafana:latest",
+		Host:      hostname,
+		NetworkID: netID,
+		Ports:     ports,
+		Envs:      envs,
+		MountData: c.mountData,
+	}
+
+	if _, err := manager.CreateAndStart(ctx, opts); err != nil {
+		return err
+	}
+
+	for i := 0; i < c.nodesCount; i++ {
+		if err := manager.StartPrometheusExporter(ctx, i+1, netID); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

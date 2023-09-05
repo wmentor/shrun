@@ -13,11 +13,27 @@ var (
 )
 
 var (
-	requiredImages = []string{"postgres:14", "ubuntu:" + common.UbuntuVersion, "golang:" + common.GoVersion, "quay.io/coreos/etcd:v" + common.EtcdVersion}
+	requiredImages = []string{
+		"postgres:14",
+		"ubuntu:" + common.UbuntuVersion,
+		"golang:" + common.GoVersion,
+		"quay.io/coreos/etcd:v" + common.EtcdVersion,
+		"prom/prometheus",
+		"grafana/grafana",
+		"prometheuscommunity/postgres-exporter",
+	}
 )
 
 var (
-	armRequiredImages = []string{"arm64v8/postgres:14", "arm64v8/ubuntu:" + common.UbuntuVersion, "golang:" + common.GoVersion, "quay.io/coreos/etcd:v" + common.EtcdVersion + "-arm64"}
+	armRequiredImages = []string{
+		"arm64v8/postgres:14",
+		"arm64v8/ubuntu:" + common.UbuntuVersion,
+		"golang:" + common.GoVersion,
+		"quay.io/coreos/etcd:v" + common.EtcdVersion + "-arm64",
+		"prom/prometheus",
+		"grafana/grafana",
+		"prometheuscommunity/postgres-exporter",
+	}
 )
 
 type Case struct {

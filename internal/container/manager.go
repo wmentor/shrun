@@ -297,3 +297,29 @@ func (mng *Manager) checkName(names []string, searchName string) bool {
 
 	return false
 }
+
+func (mng *Manager) StartPrometheusExporter(ctx context.Context, num int, netID string) error {
+	hostname := fmt.Sprintf("%s%s%d", common.GetObjectPrefix(), "pe", num)
+	log.Printf("start %s", hostname)
+
+	envs := common.GetEnvs()
+
+	envs = append(envs,
+		"DATA_SOURCE_NAME=postgresql://postgres:12345@"+common.GetNodeName(num)+":5432/postgres?sslmode=disable",
+		"PG_EXPORTER_DISABLE_DEFAULT_METRICS=true",
+		"PG_EXPORTER_DISABLE_SETTINGS_METRICS=true",
+	)
+
+	opts := entities.ContainerStartSettings{
+		Image:     "prometheuscommunity/postgres-exporter",
+		Host:      hostname,
+		NetworkID: netID,
+		Envs:      envs,
+	}
+
+	if _, err := mng.CreateAndStart(ctx, opts); err != nil {
+		return err
+	}
+
+	return nil
+}
