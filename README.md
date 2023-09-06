@@ -58,7 +58,7 @@ shrun build --build-basic --build-pg --build-gotpc
 ## Запуск кластера
 
 ```
-shrun start --nodes count [--update|-u] [--force|-f] [--mount-data] [--shell]
+shrun start --nodes count [--update|-u] [--force|-f] [--mount-data] [--shell] [--grafana]
 ```
 
 Запускает кластер из заданного числа нод (по умолчанию выполняется shardmanctl init + shardmanctl nodes add). 
@@ -70,6 +70,8 @@ shrun start --nodes count [--update|-u] [--force|-f] [--mount-data] [--shell]
 опцию *--update|-u* .
 
 Флаг *--shell* говорит о том, что после добавления нод сразу нужно подключится к первой ноде.
+
+Флаг *--grafana* подключает grafana/prometheus для кластера.
 
 В случае успешного запуска в build-каталоге будет создана директория /mntdata, которая будет подмонтирована ко всем запущенным контейнерам.
 
