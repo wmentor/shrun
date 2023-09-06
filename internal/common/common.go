@@ -31,6 +31,8 @@ const (
 	DockerfilePrometheus  = "Dockerfile.prometheus"
 	DockerfileGrafana     = "Dockerfile.grafana"
 	GrafanaDatasourceConf = "datasource.yaml"
+	GrafanaBoard          = "dashboard.yaml"
+	GrafanaBoardMain      = "Main.json"
 
 	ArchAmd64 = "amd64"
 	ArchArm64 = "arm64"

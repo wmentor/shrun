@@ -48,3 +48,9 @@ var SrcGrafana []byte
 
 //go:embed datasource.yaml.tmpl
 var SrcGrafanaDatasource []byte
+
+//go:embed dashboard.yaml.tmpl
+var SrcGrafanaBoard []byte
+
+//go:embed Main.json.tmpl
+var SrcGrafanaMainBoard []byte

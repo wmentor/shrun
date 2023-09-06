@@ -59,6 +59,9 @@ func (ci *CommandRM) exec(cc *cobra.Command, _ []string) error {
 
 	nextNum := 0
 	nodes := make([]string, 0, 16)
+	gnodes := make([]string, 0, 16)
+
+	hasGrafana := common.GetGrafanaStatus()
 
 	for {
 		nextNum++
@@ -73,6 +76,10 @@ func (ci *CommandRM) exec(cc *cobra.Command, _ []string) error {
 			return err
 		}
 		nodes = append(nodes, nodeName)
+
+		if hasGrafana {
+			gnodes = append(gnodes, mng.GetExporterName(nextNum))
+		}
 	}
 
 	if len(nodes) == 0 {
@@ -81,8 +88,10 @@ func (ci *CommandRM) exec(cc *cobra.Command, _ []string) error {
 
 	if ci.nodesCount < len(nodes) {
 		nodes = nodes[len(nodes)-ci.nodesCount:]
-	} else {
-		
+	}
+
+	if ci.nodesCount < len(gnodes) {
+		gnodes = gnodes[len(gnodes)-ci.nodesCount:]
 	}
 
 	err = nil
@@ -93,6 +102,10 @@ func (ci *CommandRM) exec(cc *cobra.Command, _ []string) error {
 				curErr = err
 			}
 		}
+	}
+
+	for _, node := range gnodes {
+		mng.RemoveContainer(ctx, node)
 	}
 
 	return err

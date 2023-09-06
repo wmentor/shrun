@@ -44,7 +44,8 @@ func (c *Case) WithGoTpc() *Case {
 }
 
 func (c *Case) Exec(ctx context.Context) error {
-	files := []string{common.SpecFile, common.RcLocalFile, common.OpenSSLConf, common.PrometheusConf, common.GrafanaDatasourceConf}
+	files := []string{common.SpecFile, common.RcLocalFile, common.OpenSSLConf, common.PrometheusConf,
+		common.GrafanaDatasourceConf, common.GrafanaBoard, common.GrafanaBoardMain}
 
 	for _, copyFile := range files {
 		dest := filepath.Join(common.GetDataDir(), copyFile)

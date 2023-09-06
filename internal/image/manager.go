@@ -168,6 +168,8 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		{common.DockerfilePrometheus, tmpl.SrcPrometheus},
 		{common.DockerfileGrafana, tmpl.SrcGrafana},
 		{common.GrafanaDatasourceConf, tmpl.SrcGrafanaDatasource},
+		{common.GrafanaBoard, tmpl.SrcGrafanaBoard},
+		{common.GrafanaBoardMain, tmpl.SrcGrafanaMainBoard},
 	}
 
 	for _, rec := range files {

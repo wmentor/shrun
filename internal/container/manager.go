@@ -86,6 +86,17 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 		}
 	}
 
+	if strings.HasSuffix(css.Host, "prometheus") {
+		dataDir := filepath.Join(common.GetDataDir(), "prometheus")
+		os.RemoveAll(dataDir)
+		os.Mkdir(dataDir, 0755)
+		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: dataDir,
+			Target: "/prometheus/wal",
+		})
+	}
+
 	if css.Host == "gobuilder" {
 		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
 			Type:   mount.TypeBind,
@@ -298,8 +309,12 @@ func (mng *Manager) checkName(names []string, searchName string) bool {
 	return false
 }
 
+func (mng *Manager) GetExporterName(num int) string {
+	return fmt.Sprintf("%s%s%d", common.GetObjectPrefix(), "pe", num)
+}
+
 func (mng *Manager) StartPrometheusExporter(ctx context.Context, num int, netID string) error {
-	hostname := fmt.Sprintf("%s%s%d", common.GetObjectPrefix(), "pe", num)
+	hostname := mng.GetExporterName(num)
 	log.Printf("start %s", hostname)
 
 	envs := common.GetEnvs()

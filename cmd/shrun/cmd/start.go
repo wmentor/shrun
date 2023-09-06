@@ -307,7 +307,7 @@ func (c *CommandStart) runGrafana(ctx context.Context, netID string, manager *co
 
 	envs := common.GetEnvs()
 
-	envs = append(envs, "GF_SECURITY_ADMIN_PASSWORD=admin", "GF_SECURITY_ADMIN_USER=admin")
+	envs = append(envs, "GF_SECURITY_ADMIN_PASSWORD=shardman", "GF_SECURITY_ADMIN_USER=shardman")
 
 	opts = entities.ContainerStartSettings{
 		Image:     "grafana:latest",
