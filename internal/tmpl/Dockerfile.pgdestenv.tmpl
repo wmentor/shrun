@@ -5,24 +5,27 @@ ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
 RUN mkdir -p /etc/systemd/system/systemd-logind.service.d /etc/shardman /build /mntdata /tmp && chmod -R 0777 /mntdata
 
-RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gnupg \
+RUN apt-get autoclean -y && apt-get update -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gnupg \
     curl \
     ca-certificates \
     vim \
-    && apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install systemd-sysv \
+    gnupg \
+    systemd-sysv \
+    systemd \
     libev4 \
-    libicu66 \
-    libldap-2.4-2 \
+    libicu-dev \
+    libldap-dev \
     libpam0g \
-    libssl1.1 \
+    libssl-dev \
     libxml2 \
     tzdata \
     ssl-cert \
+    libldap2-dev \
     locales \
     dbus-x11 \
     make \
     libipc-run-perl \
-    libyaml-libyaml-perl \
     libreadline8 \
     pkg-config \
     net-tools \
@@ -37,6 +40,8 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-
     libcurl4-nss-dev \
     libcurl4 \
     telnet \
+    libxslt-dev \
+    libxml2-dev \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
     && apt-get clean -y \
