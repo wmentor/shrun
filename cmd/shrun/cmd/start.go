@@ -328,5 +328,21 @@ func (c *CommandStart) runGrafana(ctx context.Context, netID string, manager *co
 		}
 	}
 
+	hostname = common.GetObjectPrefix() + "cadvisor"
+	log.Printf("start %s", hostname)
+
+	ports = []string{"8080:8080"}
+
+	opts = entities.ContainerStartSettings{
+		Image:     "gcr.io/cadvisor/cadvisor:v0.47.2",
+		Host:      hostname,
+		NetworkID: netID,
+		Ports:     ports,
+	}
+
+	if _, err := manager.CreateAndStart(ctx, opts); err != nil {
+		log.Printf("start cadvisor error: %v", err)
+	}
+
 	return nil
 }

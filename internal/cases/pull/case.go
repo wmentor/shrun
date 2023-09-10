@@ -21,6 +21,7 @@ var (
 		"prom/prometheus",
 		"grafana/grafana",
 		"prometheuscommunity/postgres-exporter",
+		"gcr.io/cadvisor/cadvisor:v0.47.2",
 	}
 )
 
@@ -33,6 +34,7 @@ var (
 		"prom/prometheus",
 		"grafana/grafana",
 		"prometheuscommunity/postgres-exporter",
+		"gcr.io/cadvisor/cadvisor:v0.47.2",
 	}
 )
 

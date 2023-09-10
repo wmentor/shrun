@@ -97,6 +97,41 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 		})
 	}
 
+	if strings.HasSuffix(css.Host, "cadvisor") {
+		hostConf.Mounts = append(hostConf.Mounts,
+			mount.Mount{
+				Type:     mount.TypeBind,
+				Source:   "/",
+				Target:   "/rootfs",
+				ReadOnly: true,
+			},
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/run",
+				Target: "/var/run",
+			},
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/run/docker.sock",
+				Target: "/var/run/docker.sock",
+			},
+			mount.Mount{
+				Type:     mount.TypeBind,
+				Source:   "/sys",
+				Target:   "/sys",
+				ReadOnly: true,
+			},
+			mount.Mount{
+				Type:     mount.TypeBind,
+				Source:   "/var/lib/docker",
+				Target:   "/var/lib/docker",
+				ReadOnly: true,
+			},
+		)
+
+		hostConf.Devices = []container.DeviceMapping{{PathOnHost: "/dev/kmsg"}}
+	}
+
 	if css.Host == "gobuilder" {
 		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
 			Type:   mount.TypeBind,
