@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -116,7 +116,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=~\"shrpe.*\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=~\"shrpe.*\"}[$interval])",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -237,7 +237,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=~\"shrpe.*\"}[10s]))",
+          "expr": "sum(rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=~\"shrpe.*\"}[$interval]))",
           "instant": false,
           "legendFormat": "Overall Txn",
           "range": true,
@@ -464,7 +464,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe1:9187\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe1:9187\"}[$interval])",
           "instant": false,
           "legendFormat": "Txn",
           "range": true,
@@ -558,7 +558,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe2:9187\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe2:9187\"}[$interval])",
           "instant": false,
           "legendFormat": "Txn",
           "range": true,
@@ -652,7 +652,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe3:9187\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe3:9187\"}[$interval])",
           "instant": false,
           "legendFormat": "Txn",
           "range": true,
@@ -746,7 +746,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe4:9187\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe4:9187\"}[$interval])",
           "instant": false,
           "legendFormat": "Txn",
           "range": true,
@@ -840,7 +840,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe5:9187\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe5:9187\"}[$interval])",
           "instant": false,
           "legendFormat": "Txn",
           "range": true,
@@ -934,7 +934,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe6:9187\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe6:9187\"}[$interval])",
           "instant": false,
           "legendFormat": "Txn",
           "range": true,
@@ -1028,7 +1028,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe7:9187\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe7:9187\"}[$interval])",
           "instant": false,
           "legendFormat": "pg_stat_database_xact_commit",
           "range": true,
@@ -1122,7 +1122,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe8:9187\"}[10s])",
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"postgres\", instance=\"shrpe8:9187\"}[$interval])",
           "instant": false,
           "legendFormat": "pg_stat_database_xact_commit",
           "range": true,
@@ -1636,7 +1636,7 @@
       "type": "timeseries"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1644,199 +1644,198 @@
         "y": 34
       },
       "id": 21,
-      "panels": [
+      "panels": [],
+      "title": "Host",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 120,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "{id=\"/\",instance=\"cadvisor:8080\",job=\"prometheus\"}"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#BA43A9",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byType",
+              "options": "time"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 5,
+        "x": 0,
+        "y": 35
+      },
+      "id": 17,
+      "links": [],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.1.1",
+      "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 30,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 2,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "normal"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "max": 120,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "percent"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "{id=\"/\",instance=\"cadvisor:8080\",job=\"prometheus\"}"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#BA43A9",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byType",
-                  "options": "time"
-                },
-                "properties": [
-                  {
-                    "id": "custom.axisPlacement",
-                    "value": "hidden"
-                  }
-                ]
-              }
-            ]
+          "editorMode": "code",
+          "expr": "sum(rate(container_cpu_system_seconds_total[$interval]))",
+          "hide": true,
+          "intervalFactor": 2,
+          "legendFormat": "a",
+          "range": true,
+          "refId": "B",
+          "step": 120
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
           },
-          "gridPos": {
-            "h": 7,
-            "w": 5,
-            "x": 0,
-            "y": 35
+          "editorMode": "code",
+          "expr": "sum(rate(container_cpu_system_seconds_total{name=~\".*\"}[$interval]))",
+          "hide": true,
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "nur container",
+          "range": true,
+          "refId": "F",
+          "step": 10
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
           },
-          "id": 17,
-          "links": [],
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": false
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+          "editorMode": "code",
+          "expr": "sum(rate(container_cpu_system_seconds_total{id=\"/\"}[$interval]))",
+          "hide": true,
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "nur docker host",
+          "metric": "",
+          "range": true,
+          "refId": "A",
+          "step": 20
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
           },
-          "pluginVersion": "10.1.1",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum(rate(container_cpu_system_seconds_total[1m]))",
-              "hide": true,
-              "intervalFactor": 2,
-              "legendFormat": "a",
-              "range": true,
-              "refId": "B",
-              "step": 120
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum(rate(container_cpu_system_seconds_total{name=~\".*\"}[1m]))",
-              "hide": true,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "nur container",
-              "range": true,
-              "refId": "F",
-              "step": 10
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum(rate(container_cpu_system_seconds_total{id=\"/\"}[1m]))",
-              "hide": true,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "nur docker host",
-              "metric": "",
-              "range": true,
-              "refId": "A",
-              "step": 20
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum(rate(process_cpu_seconds_total[$interval])) * 100",
-              "hide": true,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "host",
-              "metric": "",
-              "range": true,
-              "refId": "C",
-              "step": 4
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum(rate(container_cpu_system_seconds_total{name=~\".*\"}[1m])) + sum(rate(container_cpu_system_seconds_total{id=\"/\"}[1m])) + sum(rate(process_cpu_seconds_total[1m]))",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "",
-              "range": true,
-              "refId": "D",
-              "step": 120
-            }
-          ],
-          "title": "CPU Usage on Node",
-          "type": "timeseries"
+          "editorMode": "code",
+          "expr": "sum(rate(process_cpu_seconds_total[$interval])) * 100",
+          "hide": true,
+          "interval": "",
+          "intervalFactor": 2,
+          "legendFormat": "host",
+          "metric": "",
+          "range": true,
+          "refId": "C",
+          "step": 4
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(container_cpu_system_seconds_total{name=~\".*\"}[$interval])) + sum(rate(container_cpu_system_seconds_total{id=\"/\"}[$interval])) + sum(rate(process_cpu_seconds_total[$interval]))",
+          "hide": false,
+          "intervalFactor": 2,
+          "legendFormat": "",
+          "range": true,
+          "refId": "D",
+          "step": 120
         }
       ],
-      "title": "Host",
-      "type": "row"
+      "title": "CPU Usage on Node",
+      "type": "timeseries"
     }
   ],
   "refresh": "5s",
@@ -1851,8 +1850,8 @@
         "auto_min": "10s",
         "current": {
           "selected": false,
-          "text": "15s",
-          "value": "15s"
+          "text": "10s",
+          "value": "10s"
         },
         "description": "",
         "hide": 0,
@@ -1865,12 +1864,12 @@
             "value": "5s"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "10s",
             "value": "10s"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "15s",
             "value": "15s"
           },
@@ -1959,12 +1958,12 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Shardman Overview",
+  "title": "Shardman Overwiew",
   "uid": "af5eabe3-0e3a-4d1d-9892-6dde7c5c321c",
   "version": 1,
   "weekStart": ""
