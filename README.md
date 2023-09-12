@@ -180,3 +180,11 @@ go-tpc tpcc prepare -d postgres -U postgres -p 12345  -D postgres -H shrn1,shrn2
 go-tpc tpcc run -d postgres -U postgres -p 12345  -D postgres -H shrn1,shrn2,shrn3 -P 5432,5432,5432 \
        --conn-params sslmode=disable --partition-type 5 --warehouses 16 --parts 16 -T 32 --time 10m --ignore-error
 ```
+
+## Используемые порты
+
+В случае, когда кластер запускается с ключем *--grafana*, автоматически становятся доступны следующие порты на локальном хосте:
+
+* 3000 - grafana (логин/пароль - shardman/shardman)
+* 8080 - cadvisor
+* 9090 – prometheus
