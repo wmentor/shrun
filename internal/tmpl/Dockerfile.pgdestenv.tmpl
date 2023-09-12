@@ -42,6 +42,8 @@ RUN apt-get autoclean -y && apt-get update -y \
     telnet \
     libxslt-dev \
     libxml2-dev \
+    iproute2 \
+    less \
     && apt-get purge -y --allow-remove-essential --allow-change-held-packages \
     && apt-get autoremove -y \
     && apt-get clean -y \

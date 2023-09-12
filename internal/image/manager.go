@@ -225,6 +225,11 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		vars.Set("RangeLimit", []string{"1", "2", "3", "4", "5", "6", "7", "8"})
 		vars.Set("CommonPrefix", common.GetObjectPrefix())
 
+		if rec.name == common.GrafanaBoardMain {
+			vars.Set("legendName", "{{name}}")
+			vars.Set("legendInstance", "{{instance}}")
+		}
+
 		res, err := tt.RenderString(data, vars)
 		if err != nil {
 			return fmt.Errorf("render %s error: %w", rec.name, err)
