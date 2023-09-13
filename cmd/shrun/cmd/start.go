@@ -208,7 +208,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 
 	node1ID := containerIDs[common.GetNodeName(1)]
 
-	code, err := manager.Exec(ctx, node1ID, "shardmanctl init -f /etc/shardman/sdmspec.json", common.PgUser)
+	code, err := manager.Exec(ctx, node1ID, "shardmanctl init -f /etc/shardman/sdmspec.json -y", common.PgUser)
 	if err != nil {
 		return err
 	}
