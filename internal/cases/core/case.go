@@ -1,4 +1,4 @@
-package gobuilder
+package core
 
 import (
 	"context"
@@ -17,7 +17,6 @@ var (
 type Case struct {
 	imgBuilder  ImageBuilder
 	contManager ContainerManager
-	rebuilder   bool
 }
 
 func NewCase(imgBuilder ImageBuilder, contManager ContainerManager) (*Case, error) {
@@ -37,23 +36,12 @@ func NewCase(imgBuilder ImageBuilder, contManager ContainerManager) (*Case, erro
 	return c, nil
 }
 
-func (c *Case) WithImageRebuild() *Case {
-	c.rebuilder = true
-	return c
-}
-
 func (c *Case) Exec(ctx context.Context) error {
-	contName := "gobuilder"
+	contName := "core"
 	imgName := fmt.Sprintf("%s:latest", contName)
 
 	if err := c.contManager.RemoveContainer(ctx, contName); err != nil {
 		return err
-	}
-
-	if c.rebuilder {
-		if err := c.imgBuilder.BuildImage(ctx, common.DockerfileGoBuilder, imgName); err != nil {
-			return err
-		}
 	}
 
 	opts := entities.ContainerStartSettings{
@@ -61,11 +49,19 @@ func (c *Case) Exec(ctx context.Context) error {
 		Host:  contName,
 	}
 
-	if _, err := c.contManager.CreateAndStart(ctx, opts); err != nil {
+	cid, err := c.contManager.CreateAndStart(ctx, opts)
+	if err != nil {
 		return fmt.Errorf("create and start %s error: %w", contName, err)
 	}
 
-	c.contManager.ShellCommand(ctx, contName, "root", "/repo", common.CmdBash)
+	c.contManager.Exec(ctx, cid, "cd /repo/shardman && make clean || true", common.PgUser)
+
+	configure := "cd /repo/shardman && ./configure --enable-debug --enable-cassert --enable-nls --with-perl " +
+		"--with-python --with-tcl --with-openssl --with-libxml --with-libxslt --with-ldap --with-icu --with-tclconfig=/usr/lib/tcl8.6 --enable-svt5"
+
+	c.contManager.Exec(ctx, cid, configure, common.PgUser)
+
+	c.contManager.ShellCommand(ctx, contName, "postgres", "/repo/shardman", common.CmdBash)
 
 	if err := c.contManager.RemoveContainer(ctx, contName); err != nil {
 		return err

@@ -83,5 +83,5 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 		cmd = append(cmd, "-c", debugCommand)
 	}
 
-	return mng.ShellCommand(cc.Context(), ci.node, ci.user, cmd)
+	return mng.ShellCommand(cc.Context(), ci.node, ci.user, "", cmd)
 }

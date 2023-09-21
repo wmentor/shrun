@@ -54,3 +54,6 @@ var SrcGrafanaBoard []byte
 
 //go:embed Main.json.tmpl
 var SrcGrafanaMainBoard []byte
+
+//go:embed Dockerfile.core.tmpl
+var SrcDockerfileCore []byte

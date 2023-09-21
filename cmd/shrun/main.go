@@ -42,6 +42,7 @@ func main() {
 	baseCommand.CompletionOptions.HiddenDefaultCmd = true
 
 	baseCommand.AddCommand(cmd.NewCommandBuild(cli).Command())
+	baseCommand.AddCommand(cmd.NewCommandCore(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandDoc(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandGoBuilder(cli).Command())
 	baseCommand.AddCommand(cmd.NewCommandGoTpc(cli).Command())

@@ -68,7 +68,7 @@ func (c *Case) Exec(ctx context.Context) error {
 		return fmt.Errorf("create and start %s error: %w", contName, err)
 	}
 
-	c.contManager.ShellCommand(ctx, contName, "root", common.CmdBash)
+	c.contManager.ShellCommand(ctx, contName, "root", "", common.CmdBash)
 
 	if err := c.contManager.RemoveContainer(ctx, contName); err != nil {
 		return err

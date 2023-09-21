@@ -56,7 +56,7 @@ func (c *Case) Exec(ctx context.Context) error {
 
 	connstr := c.makeConnstr(opts)
 
-	return c.manager.ShellCommand(ctx, c.hostname, "postgres", []string{"psql", "-d", connstr})
+	return c.manager.ShellCommand(ctx, c.hostname, "postgres", "", []string{"psql", "-d", connstr})
 }
 
 type params struct {
