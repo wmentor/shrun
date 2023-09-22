@@ -77,7 +77,7 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 		dataDir := filepath.Join(common.GetPgDataDir(), css.Host)
 		os.RemoveAll(dataDir)
 		if css.MountData {
-			os.Mkdir(dataDir, 0755)
+			os.Mkdir(dataDir, common.AccessPerm)
 			hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
 				Type:   mount.TypeBind,
 				Source: dataDir,
@@ -89,7 +89,7 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 	if strings.HasSuffix(css.Host, "prometheus") {
 		dataDir := filepath.Join(common.GetDataDir(), "prometheus")
 		os.RemoveAll(dataDir)
-		os.Mkdir(dataDir, 0755)
+		os.Mkdir(dataDir, common.AccessPerm)
 		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
 			Type:   mount.TypeBind,
 			Source: dataDir,

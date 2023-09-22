@@ -16,6 +16,8 @@ import (
 )
 
 const (
+	AccessPerm = 0775
+
 	OpenSSLConf           = "openssl.conf"
 	PrometheusConf        = "prometheus.yml"
 	SpecFile              = "sdmspec.json"
@@ -82,7 +84,7 @@ func init() {
 
 	if finfo, err := os.Lstat(dirConfig); err != nil {
 		if os.IsNotExist(err) {
-			if err := os.Mkdir(dirConfig, 0755); err != nil {
+			if err := os.Mkdir(dirConfig, AccessPerm); err != nil {
 				log.Fatalf("create directory %s error: %v", dirConfig, err.Error())
 			}
 		} else {
@@ -102,8 +104,8 @@ func init() {
 	log.Printf("config dir : %s (env SHRDM_CONFIG_DIR or ~/.shrun)", dirConfig)
 	log.Printf("data dir: %s (env SHRDM_DATA_DIR or ~/build)", dirData)
 
-	os.Mkdir(GetVolumeDir(), 0755)
-	os.Mkdir(GetPgDataDir(), 0755)
+	os.Mkdir(GetVolumeDir(), AccessPerm)
+	os.Mkdir(GetPgDataDir(), AccessPerm)
 }
 
 func GetDefaultArch() string {
@@ -140,7 +142,7 @@ func CopyFile(ctx context.Context, src string, dest string) error {
 		return err
 	}
 
-	if err = os.WriteFile(dest, data, 0755); err != nil {
+	if err = os.WriteFile(dest, data, AccessPerm); err != nil {
 		log.Printf("write file %s error: %v", dest, err)
 		return err
 	}
@@ -228,7 +230,7 @@ func GetGoModDir() string {
 
 	modDir := filepath.Join(uinfo.HomeDir, "/gopath/go1.20/pkg")
 
-	os.MkdirAll(modDir, 0755)
+	os.MkdirAll(modDir, AccessPerm)
 
 	return modDir
 }
@@ -239,7 +241,7 @@ func getGrafanaFile() string {
 
 func SaveGrafanaStatus(enable bool) {
 	if enable {
-		os.WriteFile(getGrafanaFile(), []byte("1"), 0755)
+		os.WriteFile(getGrafanaFile(), []byte("1"), AccessPerm)
 	} else {
 		os.Remove(getGrafanaFile())
 	}
