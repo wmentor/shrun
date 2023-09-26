@@ -146,6 +146,14 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 		})
 	}
 
+	if css.Host == "core" {
+		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: common.GetDataDir(),
+			Target: "/repo",
+		})
+	}
+
 	hostConf.Memory = css.MemoryLimit
 	if css.CPU != 0 {
 		hostConf.NanoCPUs = int64(1000000000 * css.CPU)
@@ -208,8 +216,12 @@ func (mng *Manager) Exec(ctx context.Context, conID string, command string, user
 	return eresp.ExitCode, nil
 }
 
-func (mng *Manager) ShellCommand(ctx context.Context, containerName string, username string, command []string) error {
-	args := []string{"exec", "-ti", "-u", username, containerName}
+func (mng *Manager) ShellCommand(ctx context.Context, containerName string, username string, workDir string, command []string) error {
+	args := []string{"exec", "-ti", "-u", username}
+	if workDir != "" {
+		args = append(args, "-w", workDir)
+	}
+	args = append(args, containerName)
 	args = append(args, command...)
 	cmd := exec.CommandContext(ctx, "docker", args...)
 

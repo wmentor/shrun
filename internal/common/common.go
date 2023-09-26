@@ -30,6 +30,7 @@ const (
 	DockerfileShardman    = "Dockerfile.shardman"
 	DockerfilePrometheus  = "Dockerfile.prometheus"
 	DockerfileGrafana     = "Dockerfile.grafana"
+	DockerfileCore        = "Dockerfile.core"
 	GrafanaDatasourceConf = "datasource.yaml"
 	GrafanaBoard          = "dashboard.yaml"
 	GrafanaBoardMain      = "Main.json"

@@ -17,6 +17,7 @@ type Case struct {
 	buildBasic bool
 	buildPG    bool
 	buildGoTpc bool
+	core       bool
 	builder    ImageBuilder
 }
 
@@ -40,6 +41,11 @@ func (c *Case) WithBuildPG() *Case {
 
 func (c *Case) WithGoTpc() *Case {
 	c.buildGoTpc = true
+	return c
+}
+
+func (c *Case) WithCore() *Case {
+	c.core = true
 	return c
 }
 
@@ -75,6 +81,10 @@ func (c *Case) Exec(ctx context.Context) error {
 		if err := c.builder.BuildImage(ctx, common.DockerfileGrafana, "grafana:latest"); err != nil {
 			return err
 		}
+	}
+
+	if c.core {
+		return c.builder.BuildImage(ctx, common.DockerfileCore, "core:latest")
 	}
 
 	if c.buildGoTpc || c.buildBasic {

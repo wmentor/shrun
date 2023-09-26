@@ -1,0 +1,19 @@
+FROM pgbuildenv
+
+ENV \
+    BUILDIR=/build \
+    DEBIAN_FRONTEND=noninteractive \
+    LC_ALL=C.UTF-8 \
+    CFLAGS=-O0 
+
+RUN grep ^postgres: /etc/group || groupadd postgres \
+    && grep ^postgres: /etc/passwd && usermod -s /bin/bash postgres \
+    || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres 
+
+RUN mkdir -p /repo && chown postgres:postgres /repo -R
+
+RUN cpan -i -T -f Fuse
+
+COPY --from=gobuilder:latest /goloop/goloop /goloop/goloop
+
+ENTRYPOINT ["/goloop/goloop"]
