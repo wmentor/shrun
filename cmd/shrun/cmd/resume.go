@@ -12,22 +12,22 @@ import (
 )
 
 var (
-	_ cmd.CobraCommand = (*CommandRenew)(nil)
+	_ cmd.CobraCommand = (*CommandResume)(nil)
 )
 
-type CommandRenew struct {
+type CommandResume struct {
 	command *cobra.Command
 	cli     *client.Client
 }
 
-func NewCommandRenew(cli *client.Client) *CommandRenew {
-	c := &CommandRenew{
+func NewCommandResume(cli *client.Client) *CommandResume {
+	c := &CommandResume{
 		cli: cli,
 	}
 
 	cc := &cobra.Command{
-		Use:   "renew",
-		Short: "renew all containers",
+		Use:   "resume",
+		Short: "resume all containers",
 		RunE:  c.exec,
 	}
 
@@ -36,11 +36,11 @@ func NewCommandRenew(cli *client.Client) *CommandRenew {
 	return c
 }
 
-func (c *CommandRenew) Command() *cobra.Command {
+func (c *CommandResume) Command() *cobra.Command {
 	return c.command
 }
 
-func (c *CommandRenew) exec(cc *cobra.Command, _ []string) error {
+func (c *CommandResume) exec(cc *cobra.Command, _ []string) error {
 	manager, err := container.NewManager(c.cli)
 	if err != nil {
 		return err
