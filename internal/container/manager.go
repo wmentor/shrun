@@ -232,7 +232,58 @@ func (mng *Manager) ShellCommand(ctx context.Context, containerName string, user
 	return cmd.Run()
 }
 
-func (mng *Manager) StopAll(ctx context.Context) {
+func (mng *Manager) Renew(ctx context.Context) error {
+	list1, list2 := mng.makeContList(ctx)
+
+	if err := mng.renewList(ctx, list2); err != nil {
+		return err
+	}
+
+	return mng.renewList(ctx, list1)
+}
+
+func (mng *Manager) renewList(ctx context.Context, containers []types.Container) error {
+	var wg sync.WaitGroup
+
+	errCh := make(chan error, len(containers))
+
+	for _, container := range containers {
+		if !mng.isOurContainer(container.Names) {
+			continue
+		}
+
+		wg.Add(1)
+		go func(id string, name string, state string) {
+			defer wg.Done()
+			if state != "running" {
+				if err := mng.client.ContainerStart(ctx, id, types.ContainerStartOptions{}); err != nil {
+					log.Printf("start container %s error: %v", name, err)
+					return
+				}
+				log.Printf("start container %s", strings.TrimLeft(name, "/"))
+			}
+		}(container.ID, container.Names[0], container.State)
+	}
+
+	wg.Wait()
+
+	close(errCh)
+
+	for e := range errCh {
+		return e
+	}
+
+	return nil
+}
+
+func (mng *Manager) StopAll(ctx context.Context, remove bool) {
+	list1, list2 := mng.makeContList(ctx)
+
+	mng.stopList(ctx, list1, remove)
+	mng.stopList(ctx, list2, remove)
+}
+
+func (mng *Manager) makeContList(ctx context.Context) ([]types.Container, []types.Container) {
 	contOpts := types.ContainerListOptions{All: true}
 
 	containers, err := mng.client.ContainerList(ctx, contOpts)
@@ -240,6 +291,23 @@ func (mng *Manager) StopAll(ctx context.Context) {
 		panic(err)
 	}
 
+	prefix := common.GetObjectPrefix() + "e"
+
+	list1 := make([]types.Container, 0, len(containers))
+	list2 := make([]types.Container, 0, len(containers))
+
+	for _, con := range containers {
+		if strings.HasPrefix(con.Names[0], prefix) || strings.HasPrefix(con.Names[0], "/"+prefix) {
+			list2 = append(list2, con)
+		} else {
+			list1 = append(list1, con)
+		}
+	}
+
+	return list1, list2
+}
+
+func (mng *Manager) stopList(ctx context.Context, containers []types.Container, remove bool) {
 	var wg sync.WaitGroup
 
 	for _, container := range containers {
@@ -251,23 +319,25 @@ func (mng *Manager) StopAll(ctx context.Context) {
 		go func(id string, name string, state string) {
 			defer wg.Done()
 			if state == "running" {
-				if err = mng.client.ContainerStop(ctx, id, nil); err != nil {
+				if err := mng.client.ContainerStop(ctx, id, nil); err != nil {
 					log.Printf("stop container %s error: %v", name, err)
 				} else {
 					log.Printf("stop container %s success", name)
 				}
 			}
-			opts := types.ContainerRemoveOptions{
-				RemoveVolumes: true,
-				Force:         true,
-			}
+			if remove {
+				opts := types.ContainerRemoveOptions{
+					RemoveVolumes: true,
+					Force:         true,
+				}
 
-			if err = mng.client.ContainerRemove(ctx, id, opts); err != nil {
-				log.Printf("remove container %s error: %v", name, err)
-			} else {
-				log.Printf("remove container %s success", name)
+				if err := mng.client.ContainerRemove(ctx, id, opts); err != nil {
+					log.Printf("remove container %s error: %v", name, err)
+				} else {
+					log.Printf("remove container %s success", name)
+				}
+				mng.removePgData(name)
 			}
-			mng.removePgData(name)
 		}(container.ID, container.Names[0], container.State)
 	}
 

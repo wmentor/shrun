@@ -5,5 +5,5 @@ import (
 )
 
 type ContainerManager interface {
-	StopAll(ctx context.Context)
+	StopAll(ctx context.Context, remove bool)
 }

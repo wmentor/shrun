@@ -11,22 +11,22 @@ import (
 )
 
 var (
-	_ cmd.CobraCommand = (*CommandStop)(nil)
+	_ cmd.CobraCommand = (*CommandPause)(nil)
 )
 
-type CommandStop struct {
+type CommandPause struct {
 	command *cobra.Command
 	cli     *client.Client
 }
 
-func NewCommandStop(cli *client.Client) *CommandStop {
-	c := &CommandStop{
+func NewCommandPause(cli *client.Client) *CommandPause {
+	c := &CommandPause{
 		cli: cli,
 	}
 
 	cc := &cobra.Command{
-		Use:   "stop",
-		Short: "stop and remove all entities",
+		Use:   "pause",
+		Short: "pause all containers",
 		RunE:  c.exec,
 	}
 
@@ -35,11 +35,11 @@ func NewCommandStop(cli *client.Client) *CommandStop {
 	return c
 }
 
-func (c *CommandStop) Command() *cobra.Command {
+func (c *CommandPause) Command() *cobra.Command {
 	return c.command
 }
 
-func (c *CommandStop) exec(cc *cobra.Command, _ []string) error {
+func (c *CommandPause) exec(cc *cobra.Command, _ []string) error {
 	manager, err := container.NewManager(c.cli)
 	if err != nil {
 		return err
@@ -55,5 +55,5 @@ func (c *CommandStop) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return myCase.Exec(cc.Context())
+	return myCase.WithRemove(false).Exec(cc.Context())
 }

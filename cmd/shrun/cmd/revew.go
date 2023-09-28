@@ -1,32 +1,33 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 
 	"github.com/wmentor/shrun/cmd"
-	"github.com/wmentor/shrun/internal/cases/stop"
 	"github.com/wmentor/shrun/internal/container"
 	"github.com/wmentor/shrun/internal/network"
 )
 
 var (
-	_ cmd.CobraCommand = (*CommandStop)(nil)
+	_ cmd.CobraCommand = (*CommandRenew)(nil)
 )
 
-type CommandStop struct {
+type CommandRenew struct {
 	command *cobra.Command
 	cli     *client.Client
 }
 
-func NewCommandStop(cli *client.Client) *CommandStop {
-	c := &CommandStop{
+func NewCommandRenew(cli *client.Client) *CommandRenew {
+	c := &CommandRenew{
 		cli: cli,
 	}
 
 	cc := &cobra.Command{
-		Use:   "stop",
-		Short: "stop and remove all entities",
+		Use:   "renew",
+		Short: "renew all containers",
 		RunE:  c.exec,
 	}
 
@@ -35,11 +36,11 @@ func NewCommandStop(cli *client.Client) *CommandStop {
 	return c
 }
 
-func (c *CommandStop) Command() *cobra.Command {
+func (c *CommandRenew) Command() *cobra.Command {
 	return c.command
 }
 
-func (c *CommandStop) exec(cc *cobra.Command, _ []string) error {
+func (c *CommandRenew) exec(cc *cobra.Command, _ []string) error {
 	manager, err := container.NewManager(c.cli)
 	if err != nil {
 		return err
@@ -50,10 +51,16 @@ func (c *CommandStop) exec(cc *cobra.Command, _ []string) error {
 		return err
 	}
 
-	myCase, err := stop.NewCase(manager, networker)
+	ctx := cc.Context()
+
+	started, err := networker.CheckNetworkExists(ctx)
 	if err != nil {
 		return err
 	}
 
-	return myCase.Exec(cc.Context())
+	if !started {
+		return errors.New("containers not found")
+	}
+
+	return manager.Renew(ctx)
 }

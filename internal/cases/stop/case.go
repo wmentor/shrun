@@ -11,8 +11,9 @@ var (
 )
 
 type Case struct {
-	cmng ContainerManager
-	nmng NetworkManager
+	cmng   ContainerManager
+	nmng   NetworkManager
+	remove bool
 }
 
 func NewCase(cmng ContainerManager, nmng NetworkManager) (*Case, error) {
@@ -25,21 +26,29 @@ func NewCase(cmng ContainerManager, nmng NetworkManager) (*Case, error) {
 	}
 
 	return &Case{
-		nmng: nmng,
-		cmng: cmng,
+		nmng:   nmng,
+		cmng:   cmng,
+		remove: true,
 	}, nil
 }
 
+func (c *Case) WithRemove(need bool) *Case {
+	c.remove = need
+	return c
+}
+
 func (c *Case) Exec(ctx context.Context) error {
-	c.cmng.StopAll(ctx)
+	c.cmng.StopAll(ctx, c.remove)
 
-	started, err := c.nmng.CheckNetworkExists(ctx)
-	if err != nil {
-		return err
-	}
+	if c.remove {
+		started, err := c.nmng.CheckNetworkExists(ctx)
+		if err != nil {
+			return err
+		}
 
-	if started {
-		return c.nmng.DeleteNetwork(ctx)
+		if started {
+			return c.nmng.DeleteNetwork(ctx)
+		}
 	}
 
 	return nil
