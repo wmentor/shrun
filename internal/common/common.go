@@ -52,7 +52,7 @@ const (
 	DefaultPgPort   = 5432
 	ExposePortLimit = 4
 
-	GoVersion     = "1.20.5"
+	GoVersion     = "1.20.8"
 	GoLintVersion = "1.53.3"
 	GoMockVersion = "1.6.0"
 	UbuntuVersion = "22.04"
