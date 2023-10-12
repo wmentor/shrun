@@ -57,3 +57,6 @@ var SrcGrafanaMainBoard []byte
 
 //go:embed Dockerfile.core.tmpl
 var SrcDockerfileCore []byte
+
+//go:embed generate.sql.tmpl
+var SrcGenerateSQL []byte

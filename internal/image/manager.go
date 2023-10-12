@@ -171,6 +171,7 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		{common.GrafanaBoard, tmpl.SrcGrafanaBoard},
 		{common.GrafanaBoardMain, tmpl.SrcGrafanaMainBoard},
 		{common.DockerfileCore, tmpl.SrcDockerfileCore},
+		{common.GenerateSQL, tmpl.SrcGenerateSQL},
 	}
 
 	for _, rec := range files {

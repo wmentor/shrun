@@ -36,6 +36,7 @@ const (
 	GrafanaDatasourceConf = "datasource.yaml"
 	GrafanaBoard          = "dashboard.yaml"
 	GrafanaBoardMain      = "Main.json"
+	GenerateSQL           = "generate.sql"
 
 	ArchAmd64 = "amd64"
 	ArchArm64 = "arm64"

@@ -39,6 +39,7 @@ type CommandStart struct {
 	mountData     bool
 	openShell     bool
 	grafana       bool
+	withData      bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -62,6 +63,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVar(&c.mountData, "mount-data", false, "mount pg data to builddir/pgdata/hostname")
 	cc.Flags().BoolVar(&c.openShell, "shell", false, "open shell")
 	cc.Flags().BoolVar(&c.grafana, "grafana", false, "use grafana")
+	cc.Flags().BoolVar(&c.withData, "make-schema", false, "generate start data")
 
 	c.command = cc
 
@@ -241,6 +243,17 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	if c.grafana {
 		if err := c.runGrafana(ctx, netID, manager); err != nil {
 			return err
+		}
+	}
+
+	if c.withData && !c.skipNodeAdd {
+		log.Print("generate data")
+		code, err = manager.Exec(ctx, node1ID, `psql -d "$(shardmanctl getconnstr)" < /var/lib/postgresql/generate.sql`, common.PgUser)
+		if err != nil {
+			return err
+		}
+		if code != 0 {
+			return fmt.Errorf("command status code: %d", code)
 		}
 	}
 

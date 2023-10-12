@@ -21,6 +21,8 @@ ARG SDM_STORE_ENDPOINTS={{ EtcdList }}
 ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
 COPY sdmspec.json /etc/shardman
+COPY generate.sql /var/lib/postgresql
+RUN chown postgres:postgres /var/lib/postgresql/generate.sql
 COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
 {{ CopyDebugTool }}
 
