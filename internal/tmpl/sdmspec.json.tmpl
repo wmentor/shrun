@@ -48,7 +48,8 @@
      "shardman.query_engine_mode": "text",
      "shardman.silk_num_workers": "8",
      "shared_buffers": "4GB",
-     "shared_preload_libraries": "postgres_fdw, shardman"
+     "ptrack.map_size": "16",
+     "shared_preload_libraries": "postgres_fdw, shardman, ptrack"
     },{{ if EnableSSL || EnableStrictHBA }}
     "strictUserHBA": true,{{ end }}
     "pgHBA": [
