@@ -34,6 +34,7 @@ type CommandStart struct {
 	force         bool
 	updateDockers bool
 	memoryLimit   string
+	extensions    []string
 	cpuLimit      float64
 	debug         bool
 	mountData     bool
@@ -64,6 +65,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVar(&c.openShell, "shell", false, "open shell")
 	cc.Flags().BoolVar(&c.grafana, "grafana", false, "use grafana")
 	cc.Flags().BoolVar(&c.withData, "make-schema", false, "generate start data")
+	cc.Flags().StringSliceVarP(&c.extensions, "extension", "e", []string{}, "extensions to create")
 
 	c.command = cc
 
@@ -234,6 +236,16 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		if code != 0 {
 			return fmt.Errorf("command status code: %d", code)
 		}
+
+		for _, ext := range c.extensions {
+			code, err = manager.Exec(ctx, node1ID, fmt.Sprintf("shardmanctl forall --sql 'CREATE EXTENSION IF NOT EXISTS %s'", qi(ext)), common.PgUser)
+			if err != nil {
+				return err
+			}
+			if code != 0 {
+				return fmt.Errorf("command status code: %d", code)
+			}
+		}
 	}
 
 	log.Printf("mount: %s --> /mntdata", common.GetVolumeDir())
@@ -358,4 +370,20 @@ func (c *CommandStart) runGrafana(ctx context.Context, netID string, manager *co
 	}
 
 	return nil
+}
+
+// PG's quote_identifier. FIXME keywords
+func qi(ident string) string {
+	var safe = true
+	for _, r := range ident {
+		if !((r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || (r == '_')) {
+			safe = false
+			break
+		}
+	}
+	if safe {
+		return ident
+	}
+	escaper := strings.NewReplacer(`"`, `""`)
+	return fmt.Sprintf("\"%s\"", escaper.Replace(ident))
 }

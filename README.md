@@ -68,7 +68,8 @@ shrun build --build-basic --build-pg --build-gotpc
 ## Запуск кластера
 
 ```
-shrun start --nodes|-n count [--update|-u] [--force|-f] [--mount-data] [--shell] [--grafana] [--make-schema]
+shrun start --nodes|-n count [--update|-u] [--force|-f] [--mount-data] [--shell] \
+           [--grafana] [--make-schema] [-e|--extension name1 [-e|--extension ...]]
 ```
 
 Запускает кластер из заданного числа нод (по умолчанию выполняется shardmanctl init + shardmanctl nodes add). 
@@ -82,6 +83,8 @@ shrun start --nodes|-n count [--update|-u] [--force|-f] [--mount-data] [--shell]
 Флаг *--shell* говорит о том, что после добавления нод сразу нужно подключится к первой ноде.
 
 Флаг *--grafana* подключает grafana/prometheus для кластера (графана будет доступна на localhost:3000 с логином и паролем shardmand).
+
+Флаг *--extension|-e* позволяет указать экстеншены, которые нужно создать при развертывание кластера Shardman.
 
 Для запуска кластера с тестовым набором данных нужно запустить команду с ключем *--make-schema*.
 
