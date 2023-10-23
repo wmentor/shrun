@@ -177,7 +177,13 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 
 		ports := make([]string, 0)
 		if c.debug {
+			log.Printf("expose port %d --> %d", 40000, 40000+i)
 			ports = append(ports, fmt.Sprintf("%d:40000", 40000+i))
+		}
+
+		for j := 0; j < common.ExposePortLimit; j++ {
+			log.Printf("expose port %d --> %d", common.DefaultPgPort+j, common.DefaultPgPort+i*common.ExposePortLimit+j)
+			ports = append(ports, fmt.Sprintf("%d:%d", common.DefaultPgPort+i*common.ExposePortLimit+j, common.DefaultPgPort+j))
 		}
 
 		opts := entities.ContainerStartSettings{

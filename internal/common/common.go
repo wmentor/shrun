@@ -49,7 +49,8 @@ const (
 
 	ShmSize = units.MB * 512
 
-	DefaultPgPort = 5432
+	DefaultPgPort   = 5432
+	ExposePortLimit = 4
 
 	GoVersion     = "1.20.5"
 	GoLintVersion = "1.53.3"

@@ -105,12 +105,20 @@ func (ci *CommandAdd) exec(cc *cobra.Command, _ []string) error {
 		hostname := common.GetNodeName(nextNum + i)
 		log.Printf("start %s", hostname)
 
+		ports := make([]string, 0)
+
+		for j := 0; j < common.ExposePortLimit; j++ {
+			log.Printf("expose port %d --> %d", common.DefaultPgPort+j, common.DefaultPgPort+(i+nextNum-1)*common.ExposePortLimit+j)
+			ports = append(ports, fmt.Sprintf("%d:%d", common.DefaultPgPort+(i+nextNum-1)*common.ExposePortLimit+j, common.DefaultPgPort+j))
+		}
+
 		opts := entities.ContainerStartSettings{
 			Image:     common.GetNodeContainerName(),
 			Host:      hostname,
 			NetworkID: netID,
 			Envs:      common.GetEnvs(),
 			MountData: ci.mountData,
+			Ports:     ports,
 		}
 
 		if ci.memoryLimit != "" {
