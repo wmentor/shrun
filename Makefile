@@ -1,7 +1,7 @@
 .PHONY: all
 
 version := $(shell git describe --tags --abbrev=64)
-dirty := ''
+dirty :=
 ifneq (,$(shell git diff --name-only))
 dirty =-dirty
 endif
