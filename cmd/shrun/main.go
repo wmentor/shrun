@@ -13,10 +13,6 @@ import (
 	"github.com/wmentor/shrun/internal/common"
 )
 
-var (
-	Version = "v0.0.20-dev"
-)
-
 func main() {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation(), client.WithTimeout(time.Minute*3))
 	if err != nil {
@@ -27,7 +23,7 @@ func main() {
 	baseCommand := &cobra.Command{
 		Use:     "shrun",
 		Short:   "manage shardman cluster for dev",
-		Version: Version,
+		Version: common.Version,
 		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
 			if common.WorkArch != common.ArchAmd64 && common.WorkArch != common.ArchArm64 {
 				return common.ErrInvalidArch

@@ -60,6 +60,8 @@ const (
 )
 
 var (
+	Version = ""
+
 	ObjectPrefix = "shr"
 	PgVersion    = 14
 	ClusterName  = "cluster0"
