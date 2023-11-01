@@ -23,6 +23,7 @@ type CommandShell struct {
 	node     string
 	user     string
 	debugCmd string
+	execCmd  string
 }
 
 func NewCommandShell(cli *client.Client) *CommandShell {
@@ -38,7 +39,8 @@ func NewCommandShell(cli *client.Client) *CommandShell {
 
 	cc.Flags().StringVarP(&ci.node, "node", "n", "", "node name")
 	cc.Flags().StringVarP(&ci.user, "user", "u", common.PgUser, "user name")
-	cc.Flags().StringVar(&ci.debugCmd, "debug", "", "debug command")
+	cc.Flags().StringVarP(&ci.execCmd, "cmd", "c", "", "exec command")
+	cc.Flags().StringVarP(&ci.debugCmd, "debug", "d", "", "debug command")
 
 	ci.command = cc
 
@@ -65,7 +67,12 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 
 	cmd := common.CmdBash
 
-	if ci.debugCmd != "" {
+	if ci.execCmd != "" {
+		cmd = append([]string{}, cmd...)
+		cmd = append(cmd, "-c", ci.execCmd)
+	}
+
+	if ci.debugCmd != "" && ci.execCmd == "" {
 		debugCMD := strings.Split(ci.debugCmd, " ")
 		args := debugCMD[1:]
 
