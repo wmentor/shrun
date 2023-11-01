@@ -117,7 +117,7 @@ shrun nodes rm -n count
 ## Подключение к конкретное ноде
 
 ```
-shrun shell -n node -u user
+shrun shell [-n node] [-u user] [-c "your command"]
 ```
 
 Коннектится к заданной ноде из-под указанного пользователя (по дефолту используется пользователь *postgres* и нода *shrn1*).
