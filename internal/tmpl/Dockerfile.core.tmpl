@@ -8,7 +8,9 @@ ENV \
 
 RUN grep ^postgres: /etc/group || groupadd postgres \
     && grep ^postgres: /etc/passwd && usermod -s /bin/bash postgres \
-    || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres 
+    || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres && usermod -aG sudo postgres
+
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 RUN mkdir -p /repo && chown postgres:postgres /repo -R
 
