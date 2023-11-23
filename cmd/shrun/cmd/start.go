@@ -26,10 +26,16 @@ var (
 	_ cmd.CobraCommand = (*CommandBuild)(nil)
 )
 
+var (
+	ErrInvalidNodeCount     = errors.New("invalid nodes count")
+	ErrInvalidFreeNodeCount = errors.New("invalid free nodes count")
+)
+
 type CommandStart struct {
 	command       *cobra.Command
 	cli           *client.Client
 	nodesCount    int
+	freeNodes     int
 	skipNodeAdd   bool
 	force         bool
 	updateDockers bool
@@ -54,7 +60,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 		RunE:  c.exec,
 	}
 
-	cc.Flags().IntVarP(&c.nodesCount, "nodes", "n", 2, "nodes count")
+	cc.Flags().IntVarP(&c.nodesCount, "nodes", "n", 2, "number of nodes to add to the cluster")
 	cc.Flags().BoolVar(&c.skipNodeAdd, "skip-node-add", false, "skip shardmanctl nodes add")
 	cc.Flags().BoolVarP(&c.force, "force", "f", false, "force start. (if already started then restart)")
 	cc.Flags().BoolVarP(&c.updateDockers, "update", "u", false, "rebuild utils and update dockers")
@@ -66,6 +72,7 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVar(&c.grafana, "grafana", false, "use grafana")
 	cc.Flags().BoolVar(&c.withData, "make-schema", false, "generate start data")
 	cc.Flags().StringSliceVarP(&c.extensions, "extension", "e", []string{}, "extensions to create")
+	cc.Flags().IntVar(&c.freeNodes, "free-nodes", 0, "number of nodes that should not be added to the cluster")
 
 	c.command = cc
 
@@ -78,7 +85,11 @@ func (c *CommandStart) Command() *cobra.Command {
 
 func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	if c.nodesCount < 1 {
-		return errors.New("invalid nodes count")
+		return ErrInvalidNodeCount
+	}
+
+	if c.freeNodes < 0 {
+		return ErrInvalidFreeNodeCount
 	}
 
 	ctx := cc.Context()
@@ -171,7 +182,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 		}
 	}
 
-	for i := 0; i < c.nodesCount; i++ {
+	for i := 0; i < c.nodesCount+c.freeNodes; i++ {
 		hostname := common.GetNodeName(i + 1)
 		log.Printf("start %s", hostname)
 
@@ -353,7 +364,7 @@ func (c *CommandStart) runGrafana(ctx context.Context, netID string, manager *co
 		return err
 	}
 
-	for i := 0; i < c.nodesCount; i++ {
+	for i := 0; i < c.nodesCount+c.freeNodes; i++ {
 		if err := manager.StartPrometheusExporter(ctx, i+1, netID); err != nil {
 			return err
 		}
