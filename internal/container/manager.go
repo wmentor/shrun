@@ -25,6 +25,10 @@ import (
 	"github.com/wmentor/shrun/internal/entities"
 )
 
+var (
+	stopTimeout = 60
+)
+
 type Manager struct {
 	client *client.Client
 }
@@ -310,8 +314,8 @@ func (mng *Manager) makeContList(ctx context.Context) ([]types.Container, []type
 func (mng *Manager) stopList(ctx context.Context, containers []types.Container, remove bool) {
 	var wg sync.WaitGroup
 
-	for _, container := range containers {
-		if !mng.isOurContainer(container.Names) {
+	for _, curContainer := range containers {
+		if !mng.isOurContainer(curContainer.Names) {
 			continue
 		}
 
@@ -319,7 +323,8 @@ func (mng *Manager) stopList(ctx context.Context, containers []types.Container, 
 		go func(id string, name string, state string) {
 			defer wg.Done()
 			if state == "running" {
-				if err := mng.client.ContainerStop(ctx, id, nil); err != nil {
+				var opts container.StopOptions
+				if err := mng.client.ContainerStop(ctx, id, opts); err != nil {
 					log.Printf("stop container %s error: %v", name, err)
 				} else {
 					log.Printf("stop container %s success", name)
@@ -338,7 +343,7 @@ func (mng *Manager) stopList(ctx context.Context, containers []types.Container, 
 				}
 				mng.removePgData(name)
 			}
-		}(container.ID, container.Names[0], container.State)
+		}(curContainer.ID, curContainer.Names[0], curContainer.State)
 	}
 
 	wg.Wait()
@@ -367,7 +372,7 @@ func (mng *Manager) GetContainer(ctx context.Context, name string) (entities.Con
 }
 
 func (mng *Manager) RemoveContainer(ctx context.Context, name string) error {
-	container, err := mng.GetContainer(ctx, name)
+	curContainer, err := mng.GetContainer(ctx, name)
 	if err != nil {
 		if !errors.Is(err, common.ErrNotFound) {
 			return err
@@ -375,8 +380,9 @@ func (mng *Manager) RemoveContainer(ctx context.Context, name string) error {
 		return nil
 	}
 
-	if container.Status == "running" {
-		if err = mng.client.ContainerStop(ctx, container.ID, nil); err != nil {
+	if curContainer.Status == "running" {
+		var opts container.StopOptions
+		if err = mng.client.ContainerStop(ctx, curContainer.ID, opts); err != nil {
 			log.Printf("stop container %s error: %v", name, err)
 			return err
 		} else {
@@ -389,7 +395,7 @@ func (mng *Manager) RemoveContainer(ctx context.Context, name string) error {
 		Force:         true,
 	}
 
-	if err = mng.client.ContainerRemove(ctx, container.ID, opts); err != nil {
+	if err = mng.client.ContainerRemove(ctx, curContainer.ID, opts); err != nil {
 		log.Printf("remove container %s error: %v", name, err)
 		return err
 	} else {
