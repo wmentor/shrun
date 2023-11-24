@@ -323,7 +323,10 @@ func (mng *Manager) stopList(ctx context.Context, containers []types.Container, 
 		go func(id string, name string, state string) {
 			defer wg.Done()
 			if state == "running" {
-				var opts container.StopOptions
+				if strings.Contains(name, common.GetObjectPrefix()+"n") {
+					mng.Exec(ctx, id, "/sbin/init 0", "root")
+				}
+				opts := container.StopOptions{Timeout: &stopTimeout}
 				if err := mng.client.ContainerStop(ctx, id, opts); err != nil {
 					log.Printf("stop container %s error: %v", name, err)
 				} else {
@@ -381,7 +384,10 @@ func (mng *Manager) RemoveContainer(ctx context.Context, name string) error {
 	}
 
 	if curContainer.Status == "running" {
-		var opts container.StopOptions
+		if strings.Contains(name, common.GetObjectPrefix()+"n") {
+			mng.Exec(ctx, curContainer.ID, "/sbin/init 0", "root")
+		}
+		opts := container.StopOptions{Timeout: &stopTimeout}
 		if err = mng.client.ContainerStop(ctx, curContainer.ID, opts); err != nil {
 			log.Printf("stop container %s error: %v", name, err)
 			return err

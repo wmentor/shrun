@@ -122,4 +122,4 @@ EXPOSE 5443
 
 WORKDIR /
 
-CMD ["/bin/bash", "-c", "exec /sbin/init --log-color=true --log-level=info --log-target=console 3>&1"]
+CMD ["/sbin/init", "--log-color", "false", "--log-level", "info", "--log-target", "console"]
