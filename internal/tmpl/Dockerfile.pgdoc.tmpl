@@ -9,6 +9,7 @@ RUN go build
 FROM pgbuildenv:latest
 
 RUN mkdir -p /build /mntdata && chmod -R 0777 /mntdata
+
 ENV BUILDIR /build
 
 ENV \
@@ -20,7 +21,8 @@ WORKDIR $BUILDIR
 COPY shardman $BUILDIR/shardman
 WORKDIR $BUILDIR/shardman
 
-RUN ./configure --enable-debug \
+RUN <<-EOF
+    ./configure --enable-debug \
     --enable-cassert \
     --enable-nls \
     --with-perl \
@@ -35,12 +37,11 @@ RUN ./configure --enable-debug \
     --enable-coverage \
     --enable-tap-tests \
     --with-tclconfig=/usr/lib/tcl8.6
-
-RUN cd /build/shardman/contrib/shardman/doc && make
-
-RUN mkdir /goloop
+    cd /build/shardman/contrib/shardman/doc
+    make -j$(nproc)
+    mkdir /goloop
+EOF
 
 COPY --from=gbuilder /goloop/goloop /goloop
 
 ENTRYPOINT ["/goloop/goloop"]
-

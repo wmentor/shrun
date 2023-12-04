@@ -26,9 +26,10 @@ RUN chown postgres:postgres /var/lib/postgresql/generate.sql
 COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
 {{ CopyDebugTool }}
 
-RUN mkdir -p /var/lib/pgpro/sdm-14/data \ 
-  &&  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" \ 
-  >> /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env
+RUN <<-EOF
+  mkdir -p /var/lib/pgpro/sdm-14/data
+  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" >> /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env
+EOF
 
 EXPOSE 15432
 EXPOSE 5432
@@ -39,4 +40,3 @@ EXPOSE 5443
 WORKDIR /
 
 CMD ["/bin/bash", "-c", "exec /sbin/init --log-color=true --log-level=info --log-target=console 3>&1"]
-

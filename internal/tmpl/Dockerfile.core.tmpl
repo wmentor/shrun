@@ -6,15 +6,15 @@ ENV \
     LC_ALL=C.UTF-8 \
     CFLAGS=-O0 
 
-RUN grep ^postgres: /etc/group || groupadd postgres \
-    && grep ^postgres: /etc/passwd && usermod -s /bin/bash postgres \
-    || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres && usermod -aG sudo postgres
-
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-RUN mkdir -p /repo && chown postgres:postgres /repo -R
-
-RUN cpan -i -T -f Fuse
+RUN <<-EOF
+    set -eux
+    grep ^postgres: /etc/group || groupadd postgres
+    grep ^postgres: /etc/passwd 
+    usermod -s /bin/bash postgres || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres && usermod -aG sudo postgres
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+    mkdir -p /repo && chown postgres:postgres /repo -R
+    cpan -i -T -f Fuse
+EOF
 
 COPY --from=gobuilder:latest /goloop/goloop /goloop/goloop
 
