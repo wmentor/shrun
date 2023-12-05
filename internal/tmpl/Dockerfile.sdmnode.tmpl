@@ -113,7 +113,12 @@ EOF2
 ENV PATH "/opt/pgpro/sdm-$PG_MAJOR/bin:${PATH}"
 ENV LD_LIBRARY_PATH "/opt/pgpro/sdm-$PG_MAJOR/lib"
 RUN ldconfig /opt/pgpro/sdm-$PG_MAJOR/lib 
-
+{{ if EnableSSL }}
+ENV PGSSLMODE verify-full
+ENV PGSSLCERT /var/lib/postgresql/.ssh/client.crt
+ENV PGSSLKEY /var/lib/postgresql/.ssh/client.key
+ENV PGSSLROOTCERT /var/lib/postgresql/.ssh/ca.crt
+{{ end }}
 EXPOSE 15432
 EXPOSE 5432
 EXPOSE 5433
