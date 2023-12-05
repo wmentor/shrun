@@ -28,7 +28,13 @@ COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
 
 RUN <<-EOF
   mkdir -p /var/lib/pgpro/sdm-14/data
-  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" >> /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env
+
+  # Set SDM env vars
+cat > /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env <<- EOFVARS
+SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME}
+SDM_LOG_LEVEL=${SDM_LOG_LEVEL}
+SDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS}
+EOFVARS
 EOF
 
 EXPOSE 15432
