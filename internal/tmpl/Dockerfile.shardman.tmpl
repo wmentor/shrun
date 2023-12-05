@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM gobuilder:latest as gbuilder
 
 ENV BUILDIR /build
@@ -21,8 +22,7 @@ ARG SDM_STORE_ENDPOINTS={{ EtcdList }}
 ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
 COPY sdmspec.json /etc/shardman
-COPY generate.sql /var/lib/postgresql
-RUN chown postgres:postgres /var/lib/postgresql/generate.sql
+COPY --chown=postgres:postgres generate.sql /var/lib/postgresql
 COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
 {{ CopyDebugTool }}
 

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM gobuilder:latest AS gbuilder
 
 WORKDIR /goloop
@@ -13,16 +14,16 @@ RUN mkdir -p /build /mntdata && chmod -R 0777 /mntdata
 ENV BUILDIR /build
 
 ENV \
-    DEBIAN_FRONTEND=noninteractive \
-    LC_ALL=C.UTF-8 \
-    CFLAGS=-O0 
+  DEBIAN_FRONTEND=noninteractive \
+  LC_ALL=C.UTF-8 \
+  CFLAGS=-O0 
 
 WORKDIR $BUILDIR
 COPY shardman $BUILDIR/shardman
 WORKDIR $BUILDIR/shardman
 
 RUN <<-EOF
-    ./configure --enable-debug \
+  ./configure --enable-debug \
     --enable-cassert \
     --enable-nls \
     --with-perl \
@@ -37,9 +38,9 @@ RUN <<-EOF
     --enable-coverage \
     --enable-tap-tests \
     --with-tclconfig=/usr/lib/tcl8.6
-    cd /build/shardman/contrib/shardman/doc
-    make -j$(nproc)
-    mkdir /goloop
+  cd /build/shardman/contrib/shardman/doc
+  make -j$(nproc)
+  mkdir /goloop
 EOF
 
 COPY --from=gbuilder /goloop/goloop /goloop

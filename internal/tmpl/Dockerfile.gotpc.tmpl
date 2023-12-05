@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM gobuilder:latest as gbuilder
 
 ENV BUILDIR /build
@@ -9,7 +10,7 @@ COPY go-tpc $BUILDIR/go-tpc
 WORKDIR $BUILDIR/go-tpc
 
 RUN --mount=type=cache,target=/go/pkg \
-    go mod tidy && make build
+  go mod tidy && make build
 
 WORKDIR $BUILDIR/go-tpc/bin
 
