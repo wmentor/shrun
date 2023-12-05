@@ -16,7 +16,6 @@ FROM pgbuildenv as sdmbuilder
 
 ENV \
   BUILDIR=/build \
-  DEBIAN_FRONTEND=noninteractive \
   LC_ALL=C.UTF-8 \
   CFLAGS=-O0 
 
@@ -75,21 +74,27 @@ RUN <<-EOF2
   sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /tmp/systemd/*
   mv /tmp/systemd/* /lib/systemd/system
   sed -i "s/var\/lib\/pgpro\/sdm-$PG_MAJOR\/data/etc\/shardman/g" /usr/lib/systemd/system/shardmand\@.service
-  chown postgres:postgres /etc/shardman /opt/pgpro /build -R
   touch /var/log/postgres.log
-  chown postgres:postgres /var/log/postgres.log
+  chown postgres:postgres /var/log/postgres.log /etc/shardman /opt/pgpro /build -R
   mkdir -p $APP/data
   printf "postgres ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
-  mkdir -p /etc/ssh/ssh_config.d/
-  printf "StrictHostKeyChecking no\n" >> /etc/ssh/ssh_config.d/pg.conf
-  printf "UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config.d/pg.conf
+
+  # Configure SSH
+  mkdir -p /etc/ssh/ssh_config.d
+cat > /etc/ssh/ssh_config.d/pg.conf <<- EOFSSH
+Host *
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+EOFSSH
+
   systemctl enable ssh rsyslog
   mkdir -p /var/lib/postgresql
   mkdir -p /var/lib/postgresql/.ssh/
   ssh-keygen -t rsa -N '' -f  /var/lib/postgresql/.ssh/id_rsa
   {{ if EnableSSL }}
+  # Configure SSL, create certificates
   openssl req -new -x509 -days 3650 -nodes -text -out /var/lib/postgresql/.ssh/ca.crt -keyout /var/lib/postgresql/.ssh/ca.key -subj "/CN=root-ca"
-  CN=localhost SAN=$SAN  openssl req -new -nodes -out /var/lib/postgresql/.ssh/server.csr -keyout /var/lib/postgresql/.ssh/server.key -extensions server -config /tmp/openssl.conf
+  CN=localhost SAN=$SAN openssl req -new -nodes -out /var/lib/postgresql/.ssh/server.csr -keyout /var/lib/postgresql/.ssh/server.key -extensions server -config /tmp/openssl.conf
   CN=localhost SAN=$SAN openssl x509 -req -in /var/lib/postgresql/.ssh/server.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/server.crt -extensions server -extfile /tmp/openssl.conf
   openssl req -new -nodes -out /var/lib/postgresql/.ssh/client.csr -keyout /var/lib/postgresql/.ssh/client.key -subj "/CN=postgres"
   openssl x509 -req -in /var/lib/postgresql/.ssh/client.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/client.crt
@@ -106,7 +111,14 @@ RUN <<-EOF2
   chown postgres:postgres /var/lib/postgresql/.psql_history /var/lib/postgresql/.bash_history
   update-ca-certificates
   mkdir -p /var/lib/pgpro/sdm-${PG_MAJOR}/data
-  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" >> /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env
+
+  # Set SDM env vars
+cat > /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env <<- EOFVARS
+SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME}
+SDM_LOG_LEVEL=${SDM_LOG_LEVEL}
+SDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS}
+EOFVARS
+
   systemctl enable shardmand@${SDM_CLUSTER_NAME}
 EOF2
 

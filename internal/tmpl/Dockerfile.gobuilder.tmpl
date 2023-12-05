@@ -15,8 +15,9 @@ ENV GONOSUMDB postgrespro.ru/*
 
 RUN <<-EOF1
   mkdir -p /repo /goloop /download /go/pkg /go/bin
-  wget -O /download/l.postgrespro.ru.ca.crt https://ssl.postgrespro.ru/l.postgrespro.ru.ca.crt
-  mv /download/l.postgrespro.ru.ca.crt /usr/local/share/ca-certificates && update-ca-certificates
+  # Install PostgresPro CA cert
+  curl -fsSL http://ssl.postgrespro.ru/l.postgrespro.ru.ca.crt -o /usr/local/share/ca-certificates/l.postgrespro.ru.ca.crt
+  /usr/sbin/update-ca-certificates
 EOF1
 
 ENV GOPATH /go
@@ -34,7 +35,8 @@ ENV LINTVER {{ GoLintVersion }}
 RUN <<-EOF3
   wget -O /download/golangci-lint-$LINTVER-linux-{{ GoArch }}.deb https://github.com/golangci/golangci-lint/releases/download/v$LINTVER/golangci-lint-$LINTVER-linux-{{ GoArch }}.deb
   dpkg -i /download/*.deb
-  apt-get update && DEBIAN_FRONTEND=noninteractive apt -y install less vim
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt -y install less vim
   apt-get purge -y --allow-remove-essential --allow-change-held-packages
   apt-get autoremove -y
   apt-get clean -y
@@ -44,7 +46,8 @@ WORKDIR /goloop
 
 RUN <<-EOF4
   printf 'package main\n\nimport (\n\t"time"\n)\n\nfunc main() {\n\tfor {\n\t\ttime.Sleep(time.Second)\n\t}\n}\n' > /goloop/goloop.go
-  go mod init goloop && go build
+  go mod init goloop
+  go build
 EOF4
 
 WORKDIR /repo

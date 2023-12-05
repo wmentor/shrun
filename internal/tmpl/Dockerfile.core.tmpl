@@ -3,7 +3,6 @@ FROM pgbuildenv
 
 ENV \
   BUILDIR=/build \
-  DEBIAN_FRONTEND=noninteractive \
   LC_ALL=C.UTF-8 \
   CFLAGS=-O0 
 
@@ -11,9 +10,11 @@ RUN <<-EOF
   set -eux
   grep ^postgres: /etc/group || groupadd postgres
   grep ^postgres: /etc/passwd 
-  usermod -s /bin/bash postgres || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres && usermod -aG sudo postgres
+  usermod -s /bin/bash postgres || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres
+  usermod -aG sudo postgres
   echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-  mkdir -p /repo && chown postgres:postgres /repo -R
+  mkdir -p /repo
+  chown postgres:postgres /repo -R
   cpan -i -T -f Fuse
 EOF
 

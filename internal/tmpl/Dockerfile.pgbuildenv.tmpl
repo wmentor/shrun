@@ -4,14 +4,13 @@ FROM {{ ImageUbuntu }}
 ENV BUILDIR /build
 
 ENV \
-  DEBIAN_FRONTEND=noninteractive \
   LC_ALL=C.UTF-8 \
   CFLAGS=-O0 
 
 RUN <<-EOF
   set -eux
   apt-get update
-  apt-get install -y --no-install-recommends \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     tar lcov pkg-config \
     git libicu-dev python3 \
     libpython3-dev libreadline-dev \
