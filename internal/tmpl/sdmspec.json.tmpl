@@ -4,12 +4,10 @@
    "PlacementPolicy": "{{ ClusterPlacementPolicy }}",
    "PgSuAuthMethod": "scram-sha-256",
    "PgSuUsername": "postgres",
-   "PgSuPassword": "change-me",
    {{ if EnableSSL }}"PgSuSSLKey": "/var/lib/postgresql/.ssh/client.key",
    "PgSuSSLCert": "/var/lib/postgresql/.ssh/client.crt",{{ else }}"PgSuPassword": "12345",{{ end }}
    "PgReplAuthMethod": "scram-sha-256",
    "PgReplUsername": "repluser",
-   "PgReplPassword": "change-me",
    {{ if EnableSSL }}"PgReplSSLKey": "/var/lib/postgresql/.ssh/repluser.key",
    "PgReplSSLCert": "/var/lib/postgresql/.ssh/repluser.crt",
    "PgSSLRootCert": "/var/lib/postgresql/.ssh/ca.crt",
