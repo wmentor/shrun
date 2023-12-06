@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM gobuilder:latest as gbuilder
 
 ENV BUILDIR /build
@@ -14,18 +15,17 @@ RUN --mount=type=cache,target=/go/pkg \
 FROM pgbuildenv as sdmbuilder
 
 ENV \
-    BUILDIR=/build \
-    DEBIAN_FRONTEND=noninteractive \
-    LC_ALL=C.UTF-8 \
-    CFLAGS=-O0 
+  BUILDIR=/build \
+  LC_ALL=C.UTF-8 \
+  CFLAGS=-O0 
 
 WORKDIR $BUILDIR
 COPY shardman $BUILDIR/shardman
 WORKDIR $BUILDIR/shardman
 
-RUN make clean || true
-
-RUN ./configure --enable-debug \
+RUN <<-EOF1
+  make clean || true
+  ./configure --enable-debug \
     --enable-cassert \
     --enable-nls \
     --with-perl \
@@ -40,16 +40,16 @@ RUN ./configure --enable-debug \
     --with-tclconfig=/usr/lib/tcl8.6 \
     --enable-svt5 \
     --with-uuid=ossp
-
-#    --enable-coverage \
-#    --enable-tap-tests \
- 
-RUN make -s -j4 install \
-    && make -s -C contrib install \ 
-    # pg_probackup community edition if not synced another
-    && if [ ! -d contrib/pg_probackup ]; then GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch REL_2_5 https://github.com/postgrespro/pg_probackup.git contrib/pg_probackup ; fi \
-    && cd contrib/pg_probackup \
-    && make && make install
+    # --enable-coverage
+    # --enable-tap-tests
+  make -s -j$(nproc) install
+  make -s -C contrib install
+  # pg_probackup community edition if not synced another
+  if [ ! -d contrib/pg_probackup ]; then GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch REL_2_5 https://github.com/postgrespro/pg_probackup.git contrib/pg_probackup ; fi
+  cd contrib/pg_probackup
+  make 
+  make install
+EOF1
 
 FROM pgdestenv:latest
 
@@ -69,51 +69,68 @@ COPY openssl.conf /tmp
 COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
 COPY --from=gbuilder /build/shardman-utils/systemd/ /tmp/systemd
 
-RUN sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /etc/rc.local && chmod 755 /etc/rc.local \
-    && sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /tmp/systemd/* \
-    && mv /tmp/systemd/* /lib/systemd/system \
-    && sed -i "s/var\/lib\/pgpro\/sdm-$PG_MAJOR\/data/etc\/shardman/g" /usr/lib/systemd/system/shardmand\@.service \
-    && chown postgres:postgres /etc/shardman -R \
-    && chown postgres:postgres /opt/pgpro -R \
-    && chown postgres:postgres /build -R \
-    && touch /var/log/postgres.log \
-    && chown postgres:postgres /var/log/postgres.log \
-    && mkdir -p $APP/data \
-    && printf "postgres ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers \
-    && mkdir -p /etc/ssh/ssh_config.d/ \
-    && printf "StrictHostKeyChecking no\n" >> /etc/ssh/ssh_config.d/pg.conf \
-    && printf "UserKnownHostsFile /dev/null" >> /etc/ssh/ssh_config.d/pg.conf \
-    && systemctl enable ssh rsyslog \
-    && mkdir -p /var/lib/postgresql \
-    && mkdir -p /var/lib/postgresql/.ssh/ \
-    && ssh-keygen -t rsa -N '' -f  /var/lib/postgresql/.ssh/id_rsa \
-    {{ if EnableSSL }}&& openssl req -new -x509 -days 3650 -nodes -text -out /var/lib/postgresql/.ssh/ca.crt -keyout /var/lib/postgresql/.ssh/ca.key -subj "/CN=root-ca" \
-    && CN=localhost SAN=$SAN  openssl req -new -nodes -out /var/lib/postgresql/.ssh/server.csr -keyout /var/lib/postgresql/.ssh/server.key -extensions server -config /tmp/openssl.conf \
-    && CN=localhost SAN=$SAN openssl x509 -req -in /var/lib/postgresql/.ssh/server.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/server.crt -extensions server -extfile /tmp/openssl.conf \
-    && openssl req -new -nodes -out /var/lib/postgresql/.ssh/client.csr -keyout /var/lib/postgresql/.ssh/client.key -subj "/CN=postgres" \
-    && openssl x509 -req -in /var/lib/postgresql/.ssh/client.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/client.crt \
-    && openssl req -new -nodes -out /var/lib/postgresql/.ssh/repluser.csr -keyout /var/lib/postgresql/.ssh/repluser.key -subj "/CN=repluser" \
-    && openssl x509 -req -in /var/lib/postgresql/.ssh/repluser.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/repluser.crt \    
-    && cp /var/lib/postgresql/.ssh/server.crt /usr/local/share/ca-certificates \
-    && cp /var/lib/postgresql/.ssh/ca.crt /usr/local/share/ca-certificates \
-    {{ end }}&& cat /var/lib/postgresql/.ssh/id_rsa.pub > /var/lib/postgresql/.ssh/authorized_keys \
-    && chmod 0600 /var/lib/postgresql/.ssh/id_rsa {{ if EnableSSL }}/var/lib/postgresql/.ssh/server.key{{ end }} \
-    && chown postgres:postgres -R /var/lib/postgresql/.ssh \
-    && cp -r /var/lib/postgresql/.ssh/ /root/.ssh \
-    && touch /var/lib/postgresql/.psql_history \
-    && chown postgres:postgres /var/lib/postgresql/.psql_history \
-    && update-ca-certificates
+RUN <<-EOF2
+  sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /etc/rc.local && chmod 755 /etc/rc.local
+  sed -i -e "s:\$(pg_major):$PG_MAJOR:g" /tmp/systemd/*
+  mv /tmp/systemd/* /lib/systemd/system
+  sed -i "s/var\/lib\/pgpro\/sdm-$PG_MAJOR\/data/etc\/shardman/g" /usr/lib/systemd/system/shardmand\@.service
+  touch /var/log/postgres.log
+  chown postgres:postgres /var/log/postgres.log /etc/shardman /opt/pgpro /build -R
+  mkdir -p $APP/data
+  printf "postgres ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-RUN mkdir -p /var/lib/pgpro/sdm-${PG_MAJOR}/data \ 
-  &&  printf "SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME} \nSDM_LOG_LEVEL=${SDM_LOG_LEVEL} \nSDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS} \n" \ 
-  >> /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env
+  # Configure SSH
+  mkdir -p /etc/ssh/ssh_config.d
+cat > /etc/ssh/ssh_config.d/pg.conf <<- EOFSSH
+Host *
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+EOFSSH
 
-RUN systemctl enable shardmand@${SDM_CLUSTER_NAME}
+  systemctl enable ssh rsyslog
+  mkdir -p /var/lib/postgresql
+  mkdir -p /var/lib/postgresql/.ssh/
+  ssh-keygen -t rsa -N '' -f  /var/lib/postgresql/.ssh/id_rsa
+  {{ if EnableSSL }}
+  # Configure SSL, create certificates
+  openssl req -new -x509 -days 3650 -nodes -text -out /var/lib/postgresql/.ssh/ca.crt -keyout /var/lib/postgresql/.ssh/ca.key -subj "/CN=root-ca"
+  CN=localhost SAN=$SAN openssl req -new -nodes -out /var/lib/postgresql/.ssh/server.csr -keyout /var/lib/postgresql/.ssh/server.key -extensions server -config /tmp/openssl.conf
+  CN=localhost SAN=$SAN openssl x509 -req -in /var/lib/postgresql/.ssh/server.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/server.crt -extensions server -extfile /tmp/openssl.conf
+  openssl req -new -nodes -out /var/lib/postgresql/.ssh/client.csr -keyout /var/lib/postgresql/.ssh/client.key -subj "/CN=postgres"
+  openssl x509 -req -in /var/lib/postgresql/.ssh/client.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/client.crt
+  openssl req -new -nodes -out /var/lib/postgresql/.ssh/repluser.csr -keyout /var/lib/postgresql/.ssh/repluser.key -subj "/CN=repluser"
+  openssl x509 -req -in /var/lib/postgresql/.ssh/repluser.csr -days 3650 -CA /var/lib/postgresql/.ssh/ca.crt -CAkey /var/lib/postgresql/.ssh/ca.key -CAcreateserial -out /var/lib/postgresql/.ssh/repluser.crt
+  cp /var/lib/postgresql/.ssh/server.crt /usr/local/share/ca-certificates 
+  cp /var/lib/postgresql/.ssh/ca.crt /usr/local/share/ca-certificates 
+  {{ end }}
+  cat /var/lib/postgresql/.ssh/id_rsa.pub > /var/lib/postgresql/.ssh/authorized_keys
+  chmod 0600 /var/lib/postgresql/.ssh/id_rsa {{ if EnableSSL }}/var/lib/postgresql/.ssh/server.key{{ end }}
+  chown postgres:postgres -R /var/lib/postgresql/.ssh
+  cp -r /var/lib/postgresql/.ssh/ /root/.ssh
+  touch /var/lib/postgresql/.psql_history /var/lib/postgresql/.bash_history
+  chown postgres:postgres /var/lib/postgresql/.psql_history /var/lib/postgresql/.bash_history
+  update-ca-certificates
+  mkdir -p /var/lib/pgpro/sdm-${PG_MAJOR}/data
+
+  # Set SDM env vars
+cat > /etc/shardman/shardmand-${SDM_CLUSTER_NAME}.env <<- EOFVARS
+SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME}
+SDM_LOG_LEVEL=${SDM_LOG_LEVEL}
+SDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS}
+EOFVARS
+
+  systemctl enable shardmand@${SDM_CLUSTER_NAME}
+EOF2
 
 ENV PATH "/opt/pgpro/sdm-$PG_MAJOR/bin:${PATH}"
 ENV LD_LIBRARY_PATH "/opt/pgpro/sdm-$PG_MAJOR/lib"
 RUN ldconfig /opt/pgpro/sdm-$PG_MAJOR/lib 
-
+{{ if EnableSSL }}
+ENV PGSSLMODE verify-full
+ENV PGSSLCERT /var/lib/postgresql/.ssh/client.crt
+ENV PGSSLKEY /var/lib/postgresql/.ssh/client.key
+ENV PGSSLROOTCERT /var/lib/postgresql/.ssh/ca.crt
+{{ end }}
 EXPOSE 15432
 EXPOSE 5432
 EXPOSE 5433

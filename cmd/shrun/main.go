@@ -8,7 +8,6 @@ import (
 
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
-
 	"github.com/wmentor/shrun/cmd/shrun/cmd"
 	"github.com/wmentor/shrun/internal/common"
 )

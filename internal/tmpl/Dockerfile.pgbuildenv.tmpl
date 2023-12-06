@@ -1,47 +1,32 @@
+# syntax=docker/dockerfile:1
 FROM {{ ImageUbuntu }}
 
 ENV BUILDIR /build
 
 ENV \
-    DEBIAN_FRONTEND=noninteractive \
-    LC_ALL=C.UTF-8 \
-    CFLAGS=-O0 
+  LC_ALL=C.UTF-8 \
+  CFLAGS=-O0 
 
-RUN set -eux; \
-    apt-get update; \
-        apt-get install -y --no-install-recommends \
-        tar \
-        lcov \
-        pkg-config \
-        git \
-        libicu-dev \
-        python3 \
-        libpython3-dev  \
-        libreadline-dev \
-        zlib1g-dev \
-        libev-dev \
-        libkrb5-dev \
-        libssl-dev \
-        libxml2-dev \
-        libxslt-dev \
-        libldap-dev \
-        libfuse-dev \
-        libossp-uuid-dev \
-        gettext \
-        tcl \
-        tcl-dev \
-        perl \
-        libperl-dev \
-        libipc-run-perl \
-        libyaml-libyaml-perl \
-        build-essential \
-        flex \
-        bison \
-        systemd-sysv systemd libicu-dev libev4 libpam0g libssl-dev libxml2 libxml2-utils xsltproc tzdata docbook-xsl \
-        ssl-cert locales dbus-x11 libipc-run-perl \
-        libcurl4-nss-dev libcurl4 \
-        vim \
-        gdb \
-        gdb-multiarch \
-        sudo \
-    && apt-get clean all;
+RUN <<-EOF
+  set -eux
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    tar lcov pkg-config \
+    git libicu-dev python3 \
+    libpython3-dev libreadline-dev \
+    zlib1g-dev libev-dev \
+    libkrb5-dev libssl-dev \
+    libxml2-dev libxslt-dev \
+    libldap-dev libfuse-dev \
+    libossp-uuid-dev gettext \
+    tcl tcl-dev perl \
+    libperl-dev libipc-run-perl \
+    libyaml-libyaml-perl build-essential \
+    flex bison systemd-sysv systemd \
+    libicu-dev libev4 libpam0g libssl-dev \
+    libxml2 libxml2-utils xsltproc tzdata docbook-xsl \
+    ssl-cert locales dbus-x11 libipc-run-perl \
+    libcurl4-nss-dev libcurl4 \
+    vim gdb gdb-multiarch sudo
+  apt-get clean all
+EOF
