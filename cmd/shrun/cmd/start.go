@@ -32,21 +32,22 @@ var (
 )
 
 type CommandStart struct {
-	command       *cobra.Command
-	cli           *client.Client
-	nodesCount    int
-	freeNodes     int
-	skipNodeAdd   bool
-	force         bool
-	updateDockers bool
-	memoryLimit   string
-	extensions    []string
-	cpuLimit      float64
-	debug         bool
-	mountData     bool
-	openShell     bool
-	grafana       bool
-	withData      bool
+	command        *cobra.Command
+	cli            *client.Client
+	nodesCount     int
+	freeNodes      int
+	skipNodeAdd    bool
+	force          bool
+	updateDockers  bool
+	memoryLimit    string
+	withExtensions []string
+	cpuLimit       float64
+	debug          bool
+	mountData      bool
+	openShell      bool
+	withGrafana    bool
+	withData       bool
+	withS3         bool
 }
 
 func NewCommandStart(cli *client.Client) *CommandStart {
@@ -69,9 +70,10 @@ func NewCommandStart(cli *client.Client) *CommandStart {
 	cc.Flags().BoolVar(&c.debug, "debug", false, "enable debug mode")
 	cc.Flags().BoolVar(&c.mountData, "mount-data", false, "mount pg data to builddir/pgdata/hostname")
 	cc.Flags().BoolVar(&c.openShell, "shell", false, "open shell")
-	cc.Flags().BoolVar(&c.grafana, "grafana", false, "use grafana")
-	cc.Flags().BoolVar(&c.withData, "make-schema", false, "generate start data")
-	cc.Flags().StringSliceVarP(&c.extensions, "extension", "e", []string{}, "extensions to create")
+	cc.Flags().BoolVar(&c.withGrafana, "with-grafana", false, "use grafana")
+	cc.Flags().BoolVar(&c.withData, "with-schema", false, "generate start data")
+	cc.Flags().BoolVar(&c.withS3, "with-s3", false, "start S3 storage (port 9000 and webui 9001)")
+	cc.Flags().StringSliceVarP(&c.withExtensions, "with-extension", "e", []string{}, "extensions to create")
 	cc.Flags().IntVar(&c.freeNodes, "free-nodes", 0, "number of nodes that should not be added to the cluster")
 
 	c.command = cc
@@ -254,7 +256,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 			return fmt.Errorf("command status code: %d", code)
 		}
 
-		for _, ext := range c.extensions {
+		for _, ext := range c.withExtensions {
 			code, err = manager.Exec(ctx, node1ID, fmt.Sprintf("shardmanctl forall --sql 'CREATE EXTENSION IF NOT EXISTS %s'", qi(ext)), common.PgUser)
 			if err != nil {
 				return err
@@ -267,9 +269,15 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 
 	log.Printf("mount: %s --> /mntdata", common.GetVolumeDir())
 
-	common.SaveGrafanaStatus(c.grafana)
+	if c.withS3 {
+		if err := c.runS3(ctx, netID, manager); err != nil {
+			return err
+		}
+	}
 
-	if c.grafana {
+	common.SaveGrafanaStatus(c.withGrafana)
+
+	if c.withGrafana {
 		if err := c.runGrafana(ctx, netID, manager); err != nil {
 			return err
 		}
@@ -291,6 +299,29 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	return nil
+}
+
+func (c *CommandStart) runS3(ctx context.Context, netID string, manager *container.Manager) error {
+	hostname := common.GetObjectPrefix() + "s3"
+	log.Printf("start %s", hostname)
+
+	ports := []string{"9000:9000", "9001:9001"}
+
+	cmdParams := []string{"server", "/data", "--console-address", ":9001"}
+
+	envs := append(common.GetEnvs(), "MINIO_ROOT_USER=shardman", "MINIO_ROOT_PASSWORD=shardman")
+
+	opts := entities.ContainerStartSettings{
+		Image:     "quay.io/minio/minio:latest",
+		Host:      hostname,
+		NetworkID: netID,
+		Ports:     ports,
+		Cmd:       cmdParams,
+		Envs:      envs,
+	}
+
+	_, err := manager.CreateAndStart(ctx, opts)
+	return err
 }
 
 func (c *CommandStart) isStarted(ctx context.Context, manager *container.Manager, networker *network.Manager) error {

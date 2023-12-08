@@ -22,6 +22,7 @@ var (
 		"grafana/grafana",
 		"prometheuscommunity/postgres-exporter",
 		"gcr.io/cadvisor/cadvisor:v0.47.2",
+		"quay.io/minio/minio",
 	}
 )
 
@@ -35,6 +36,7 @@ var (
 		"grafana/grafana",
 		"prometheuscommunity/postgres-exporter",
 		"gcr.io/cadvisor/cadvisor:v0.47.2",
+		"quay.io/minio/minio",
 	}
 )
 

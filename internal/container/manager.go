@@ -90,6 +90,17 @@ func (mng *Manager) CreateAndStart(ctx context.Context, css entities.ContainerSt
 		}
 	}
 
+	if css.Host == common.GetObjectPrefix()+"s3" {
+		dataDir := filepath.Join(common.GetVolumeDir(), "s3")
+		os.RemoveAll(dataDir)
+		os.Mkdir(dataDir, common.AccessPerm)
+		hostConf.Mounts = append(hostConf.Mounts, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: dataDir,
+			Target: "/data",
+		})
+	}
+
 	if strings.HasSuffix(css.Host, "prometheus") {
 		dataDir := filepath.Join(common.GetDataDir(), "prometheus")
 		os.RemoveAll(dataDir)

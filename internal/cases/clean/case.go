@@ -12,7 +12,7 @@ var (
 )
 var (
 	imageList = []string{common.GetNodeContainerName(), common.GetSdmNodeImageName(),
-		"gobuilder:latest", "pgbuildenv:latest", "pgdestenv:latest", "gotpc:latest", "pgdoc:latest"}
+		"gobuilder:latest", "pgbuildenv:latest", "pgdestenv:latest", "gotpc:latest", "pgdoc:latest", "quay.io/minio/minio:latest"}
 )
 
 var (

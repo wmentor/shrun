@@ -20,7 +20,8 @@ make
 ## Инициализация
 
 ```
-shrun init  [--etcd-count int] [--log-level debug|warn|info|error] [--repfactor 1] [--topology cross|manual]
+shrun init  [--etcd-count int] [--log-level debug|warn|info|error] [--repfactor 1] \
+            [--topology cross|manual] [--ssl] [--strict-hba] [--disable-go-proxy]
 ```
 
 В конфигурационной директории создает Dockerfile-ы, sdmspec.json, rc.local и другие файла. В качестве директории по умолчанию используется *~/.shrun* (если ее нет, 
@@ -33,6 +34,13 @@ shrun init  [--etcd-count int] [--log-level debug|warn|info|error] [--repfactor 
 *--repfactor* задает репфактор (дефолт 1)
 
 *--topology* задает режим топологии (дефолт *cross*)
+
+*--ssl* задаем режим использования SSL шифрования.
+
+*--strict-hba* использовать явно заданные записи hba.conf 
+
+*--disable-go-proxy* отключить использование GoProxy.
+
 
 После инита нужно делать build со всеми параметрами.
 
@@ -69,8 +77,8 @@ shrun build --build-basic --build-pg --build-gotpc
 
 ```
 shrun start --nodes|-n count [--update|-u] [--force|-f] [--mount-data] [--shell] \
-           [--grafana] [--make-schema] [-e|--extension name1 [-e|--extension ...]] \
-           [--free-nodes count]
+           [--with-grafana] [--with-schema] [-e|--with-extension name1 [-e|--with-extension ...]] \
+           [--with-s3] [--free-nodes count]
 ```
 
 Запускает кластер из заданного числа нод (по умолчанию выполняется shardmanctl init + shardmanctl nodes add). 
@@ -83,13 +91,15 @@ shrun start --nodes|-n count [--update|-u] [--force|-f] [--mount-data] [--shell]
 
 Флаг *--shell* говорит о том, что после добавления нод сразу нужно подключится к первой ноде.
 
-Флаг *--grafana* подключает grafana/prometheus для кластера (графана будет доступна на localhost:3000 с логином и паролем shardmand).
+Флаг *--with-grafana* подключает grafana/prometheus для кластера (графана будет доступна на localhost:3000 с логином и паролем shardmand).
 
-Флаг *--extension|-e* позволяет указать экстеншены, которые нужно создать при развертывание кластера Shardman.
+Флаг *--with-extension|-e* позволяет указать экстеншены, которые нужно создать при развертывание кластера Shardman.
+
+Флаг *--with-s3* запустить S3 сервер (порт 9000, для WebUI порт - 9001, логин - shardman, пароль - shardman).
 
 Флаг *--free-nodes* указывает, что нужно создать еще дополнительное число узлов (кроме тех, что указаны в *--nodes|-n*), но не добавлять их в кластер.
 
-Для запуска кластера с тестовым набором данных нужно запустить команду с ключем *--make-schema*.
+Для запуска кластера с тестовым набором данных нужно запустить команду с ключем *--with-schema*.
 
 В случае успешного запуска в build-каталоге будет создана директория /mntdata, которая будет подмонтирована ко всем запущенным контейнерам.
 
@@ -230,4 +240,5 @@ go-tpc tpcc run -d postgres -U postgres -p 12345  -D postgres -H shrn1,shrn2,shr
 
 * 3000 - grafana (логин/пароль - shardman/shardman)
 * 8080 - cadvisor
+* 9001 - S3 WebUI (логин/пароль - shardman/shardman)
 * 9090 – prometheus
