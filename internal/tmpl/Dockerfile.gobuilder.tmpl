@@ -22,7 +22,7 @@ RUN <<-EOF
   curl -fsSL http://ssl.postgrespro.ru/l.postgrespro.ru.ca.crt -o /usr/local/share/ca-certificates/l.postgrespro.ru.ca.crt
   /usr/sbin/update-ca-certificates
   
-  go install github.com/go-delve/delve/cmd/dlv@latest --mount=type=cache,target=/go/pkg
+  go install github.com/go-delve/delve/cmd/dlv@latest
 
   go install golang.org/x/tools/cmd/goimports@latest
   go install github.com/golang/mock/mockgen@v{{ GoMockVersion }}
