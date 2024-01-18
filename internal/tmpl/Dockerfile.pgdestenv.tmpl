@@ -21,7 +21,7 @@ RUN <<-EOF
     gdb gdb-multiarch sudo \
     libcurl4-nss-dev libcurl4 \
     telnet libxslt-dev libxml2-dev \
-    iproute2 less
+    iproute2 less jq
   apt-get purge -y --allow-remove-essential --allow-change-held-packages
   apt-get autoremove -y
   apt-get clean -y

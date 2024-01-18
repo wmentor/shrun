@@ -7,7 +7,6 @@ ENV \
   CFLAGS=-O0 
 
 RUN <<-EOF
-  set -eux
   grep ^postgres: /etc/group || groupadd postgres
   grep ^postgres: /etc/passwd 
   usermod -s /bin/bash postgres || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres

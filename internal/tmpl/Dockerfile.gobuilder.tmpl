@@ -32,7 +32,7 @@ RUN <<-EOF
   dpkg -i /download/*.deb
   
   apt-get update
-  DEBIAN_FRONTEND=noninteractive apt -y install less vim
+  DEBIAN_FRONTEND=noninteractive apt -y install less vim jq
   apt-get purge -y --allow-remove-essential --allow-change-held-packages
   apt-get autoremove -y
   apt-get clean -y
