@@ -12,6 +12,11 @@ WORKDIR $BUILDIR/shardman-utils
 RUN --mount=type=cache,target=/go/pkg \
     go mod tidy && {{ Build }}
 
+RUN <<-EOF
+echo "export UTIL_VERSION=$(git describe --tags --abbrev=64)" | cat > /var/sdm_util.env
+echo "export UTIL_BRANCH=$(git branch --show-current)" | cat >> /var/sdm_util.env
+EOF
+
 FROM {{ ImageSdmNode }}
 
 ARG PG_MAJOR={{ PgMajorVersion }}
@@ -24,6 +29,7 @@ ENV APP /opt/pgpro/sdm-$PG_MAJOR
 COPY sdmspec.json /etc/shardman
 COPY --chown=postgres:postgres generate.sql /var/lib/postgresql
 COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
+COPY --from=gbuilder /var/sdm_util.env /var/sdm_util.env
 {{ CopyDebugTool }}
 
 RUN <<-EOF
@@ -35,6 +41,14 @@ SDM_CLUSTER_NAME=${SDM_CLUSTER_NAME}
 SDM_LOG_LEVEL=${SDM_LOG_LEVEL}
 SDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS}
 EOFVARS
+
+cat /var/sdm_core.env /var/sdm_util.env > /var/lib/postgresql/.bashrc
+
+echo 'echo "Core version: $CORE_VERSION branch: $CORE_BRANCH"' >> /var/lib/postgresql/.bashrc
+echo 'echo "Util version: $UTIL_VERSION branch: $UTIL_BRANCH"' >> /var/lib/postgresql/.bashrc
+echo 'echo "Bckp version: $BACKUP_VERSION"' >> /var/lib/postgresql/.bashrc
+
+rm -f /var/sdm_core.env /var/sdm_util.env
 EOF
 
 EXPOSE 15432
