@@ -46,7 +46,7 @@ cat /var/sdm_core.env /var/sdm_util.env > /var/lib/postgresql/.bashrc
 
 echo 'echo "Core version: $CORE_VERSION branch: $CORE_BRANCH"' >> /var/lib/postgresql/.bashrc
 echo 'echo "Util version: $UTIL_VERSION branch: $UTIL_BRANCH"' >> /var/lib/postgresql/.bashrc
-echo 'echo "Bckp version: $BACKUP_VERSION"' >> /var/lib/postgresql/.bashrc
+echo 'pg_probackup --version' >> /var/lib/postgresql/.bashrc
 
 rm -f /var/sdm_core.env /var/sdm_util.env
 EOF

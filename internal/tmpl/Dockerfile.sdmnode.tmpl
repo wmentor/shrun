@@ -51,8 +51,6 @@ RUN <<-EOF1
   cd contrib/pg_probackup
   make 
   make install
-  echo "export BACKUP_VERSION=$(git describe --tags --abbrev=64)" | cat >> /var/sdm_core.env
-  echo "export BACKUP_BRANCH=$(git branch --show-current)" | cat >> /var/sdm_core.env
 EOF1
 
 FROM pgdestenv:latest
