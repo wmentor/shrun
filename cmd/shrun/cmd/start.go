@@ -295,7 +295,7 @@ func (c *CommandStart) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	if c.openShell {
-		return manager.ShellCommand(cc.Context(), common.GetNodeName(1), common.PgUser, "", common.CmdBash)
+		return manager.ShellCommand(cc.Context(), common.GetNodeName(1), common.PgUser, "", append(common.CmdBash, "-c", "/var/lib/postgresql/.build_info && /bin/bash"))
 	}
 
 	return nil

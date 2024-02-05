@@ -44,13 +44,14 @@ RUN <<-EOF1
     # --enable-tap-tests
   make -s -j$(nproc) install
   make -s -C contrib install
-  echo "export CORE_VERSION=$(git describe --tags --abbrev=64)" | cat > /var/sdm_core.env
-  echo "export CORE_BRANCH=$(git branch --show-current)" | cat >> /var/sdm_core.env
   # pg_probackup community edition if not synced another
   if [ ! -d contrib/pg_probackup ]; then GIT_SSL_NO_VERIFY=1 git clone --depth 1 --branch REL_2_5 https://github.com/postgrespro/pg_probackup.git contrib/pg_probackup ; fi
   cd contrib/pg_probackup
   make 
   make install
+  cd ../..
+  echo "export SHRUN_CORE_VERSION=$(git describe --tags --abbrev=64)" | cat > /var/shrun_sdm_core.env
+  echo "export SHRUN_CORE_BRANCH=$(git branch --show-current)" | cat >> /var/shrun_sdm_core.env
 EOF1
 
 FROM pgdestenv:latest
@@ -65,7 +66,7 @@ ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
 COPY --from=sdmbuilder /usr/local/pgsql $APP
 COPY --from=sdmbuilder /build/shardman /build/shardman
-COPY --from=sdmbuilder /var/sdm_core.env /var/sdm_core.env
+COPY --from=sdmbuilder /var/shrun_sdm_core.env /var/shrun_sdm_core.env
 COPY rc.local /etc/rc.local
 COPY sdmspec.json /etc/shardman
 COPY openssl.conf /tmp

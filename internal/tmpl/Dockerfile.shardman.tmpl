@@ -13,8 +13,8 @@ RUN --mount=type=cache,target=/go/pkg \
     go mod tidy && {{ Build }}
 
 RUN <<-EOF
-echo "export UTIL_VERSION=$(git describe --tags --abbrev=64)" | cat > /var/sdm_util.env
-echo "export UTIL_BRANCH=$(git branch --show-current)" | cat >> /var/sdm_util.env
+echo "export SHRUN_UTIL_VERSION=$(git describe --tags --abbrev=64)" | cat > /var/shrun_sdm_util.env
+echo "export SHRUN_UTIL_BRANCH=$(git branch --show-current)" | cat >> /var/shrun_sdm_util.env
 EOF
 
 FROM {{ ImageSdmNode }}
@@ -29,7 +29,7 @@ ENV APP /opt/pgpro/sdm-$PG_MAJOR
 COPY sdmspec.json /etc/shardman
 COPY --chown=postgres:postgres generate.sql /var/lib/postgresql
 COPY --from=gbuilder /build/shardman-utils/bin/ $APP/bin
-COPY --from=gbuilder /var/sdm_util.env /var/sdm_util.env
+COPY --from=gbuilder /var/shrun_sdm_util.env /var/shrun_sdm_util.env
 {{ CopyDebugTool }}
 
 RUN <<-EOF
@@ -42,13 +42,16 @@ SDM_LOG_LEVEL=${SDM_LOG_LEVEL}
 SDM_STORE_ENDPOINTS=${SDM_STORE_ENDPOINTS}
 EOFVARS
 
-cat /var/sdm_core.env /var/sdm_util.env > /var/lib/postgresql/.bashrc
+cat /var/shrun_sdm_core.env /var/shrun_sdm_util.env > /var/lib/postgresql/.build_info
 
-echo 'echo "Core version: $CORE_VERSION branch: $CORE_BRANCH"' >> /var/lib/postgresql/.bashrc
-echo 'echo "Util version: $UTIL_VERSION branch: $UTIL_BRANCH"' >> /var/lib/postgresql/.bashrc
-echo 'pg_probackup --version' >> /var/lib/postgresql/.bashrc
+echo 'echo "Core version: $SHRUN_CORE_VERSION branch: $SHRUN_CORE_BRANCH"' >> /var/lib/postgresql/.build_info
+echo 'echo "Util version: $SHRUN_UTIL_VERSION branch: $SHRUN_UTIL_BRANCH"' >> /var/lib/postgresql/.build_info
+echo 'pg_probackup --version' >> /var/lib/postgresql/.build_info
 
-rm -f /var/sdm_core.env /var/sdm_util.env
+chmod +x /var/lib/postgresql/.build_info
+chown postgres:postgres /var/lib/postgresql/.build_info
+
+rm -f /var/shrun_sdm_core.env /var/shrun_sdm_util.env
 EOF
 
 EXPOSE 15432

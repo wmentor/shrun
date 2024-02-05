@@ -66,6 +66,9 @@ func (ci *CommandShell) exec(cc *cobra.Command, _ []string) error {
 	}
 
 	cmd := common.CmdBash
+	if ci.user == common.PgUser && ci.execCmd == "" {
+		cmd = append(cmd, "-c", "/var/lib/postgresql/.build_info && /bin/bash")
+	}
 
 	if ci.execCmd != "" {
 		cmd = append([]string{}, cmd...)
