@@ -27,6 +27,7 @@ RUN <<-EOF
   go install golang.org/x/tools/cmd/goimports@latest
   go install github.com/golang/mock/mockgen@v{{ GoMockVersion }}
   go install golang.org/x/vuln/cmd/govulncheck@latest
+  go install github.com/swaggo/swag/cmd/swag@v{{ GoSwagVersion }}
   
   wget -O /download/golangci-lint-$LINTVER-linux-{{ GoArch }}.deb https://github.com/golangci/golangci-lint/releases/download/v$LINTVER/golangci-lint-$LINTVER-linux-{{ GoArch }}.deb
   dpkg -i /download/*.deb

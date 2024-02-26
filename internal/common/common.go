@@ -55,6 +55,7 @@ const (
 	GoVersion     = "1.20.5"
 	GoLintVersion = "1.53.3"
 	GoMockVersion = "1.6.0"
+	GoSwagVersion = "1.16.3"
 	UbuntuVersion = "22.04"
 	EtcdVersion   = "3.5.10"
 )

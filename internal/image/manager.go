@@ -184,6 +184,7 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		vars.Set("GoVersion", common.GoVersion)
 		vars.Set("GoLintVersion", common.GoLintVersion)
 		vars.Set("GoMockVersion", common.GoMockVersion)
+		vars.Set("GoSwagVersion", common.GoSwagVersion)
 		vars.Set("GoArch", common.WorkArch)
 		vars.Set("GoEnableProxy", !settings.NoGoProxy)
 
