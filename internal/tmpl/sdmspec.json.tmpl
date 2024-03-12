@@ -57,7 +57,7 @@
      "hostssl replication repluser 0.0.0.0/0 cert clientcert=verify-full",
      "hostssl replication repluser ::0/0 cert clientcert=verify-full",
      "hostnossl all all 0.0.0.0/0 reject",
-     "local postgres postgres scram-sha-256",
+     "local postgres postgres peer",
      "local replication repluser scram-sha-256"{{ else }}"host replication postgres 0.0.0.0/0 scram-sha-256",
      "host replication postgres ::0/0 scram-sha-256"{{ end }}
     ],
