@@ -21,7 +21,7 @@ make
 
 ```
 shrun init  [--etcd-count int] [--log-level debug|warn|info|error] [--repfactor 1] \
-            [--topology cross|manual] [--ssl] [--strict-hba] [--disable-go-proxy]
+            [--topology cross|manual] [--ssl] [--strict-hba] [--disable-go-proxy] [--pg-version 14|17]
 ```
 
 В конфигурационной директории создает Dockerfile-ы, sdmspec.json, rc.local и другие файла. В качестве директории по умолчанию используется *~/.shrun* (если ее нет, 
@@ -40,6 +40,8 @@ shrun init  [--etcd-count int] [--log-level debug|warn|info|error] [--repfactor 
 *--strict-hba* использовать явно заданные записи hba.conf 
 
 *--disable-go-proxy* отключить использование GoProxy.
+
+*--pg-version* версия PostgreSQL, на базе которой базируется Shardman (14 или 17; по умолчанию: 14)
 
 
 После инита нужно делать build со всеми параметрами.

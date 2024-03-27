@@ -5,9 +5,13 @@ ENV BUILDIR /build
 
 RUN mkdir $BUILDIR
 
+ARG PG_MAJOR={{ PgMajorVersion }}
+
 WORKDIR $BUILDIR
 COPY shardman-utils $BUILDIR/shardman-utils
 WORKDIR $BUILDIR/shardman-utils
+
+RUN  sed -i 's/$(pg_major)/{{ PgMajorVersion }}/g' Makefile
 
 RUN --mount=type=cache,target=/go/pkg \
     go mod tidy && {{ Build }}

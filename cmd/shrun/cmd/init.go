@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 
@@ -13,6 +15,8 @@ import (
 
 var (
 	_ cmd.CobraCommand = (*CommandPull)(nil)
+
+	ErrInvalidPgVersion = errors.New("invalid --pg-version flag value")
 )
 
 type CommandInit struct {
@@ -39,6 +43,7 @@ func NewCommandInit(cli *client.Client) *CommandInit {
 	cc.Flags().StringVar(&ci.settings.Topology, "topology", "cross", "cluster topology (cross or manual, cross as default)")
 	cc.Flags().IntVar(&ci.settings.EtcdCount, "etcd-count", 1, "etcd instance count (default 1)")
 	cc.Flags().StringVar(&ci.settings.LogLevel, "log-level", "debug", "log level (default debug)")
+	cc.Flags().IntVar(&common.PgVersion, "pg-version", 14, "postgresql version 14 or 17")
 	cc.Flags().BoolVar(&ci.settings.Debug, "debug", false, "enable debug mode")
 
 	ci.command = cc
@@ -51,6 +56,10 @@ func (ci *CommandInit) Command() *cobra.Command {
 }
 
 func (ci *CommandInit) exec(cc *cobra.Command, _ []string) error {
+	if common.PgVersion != 14 && common.PgVersion != 17 {
+		return ErrInvalidPgVersion
+	}
+
 	imageManager, err := image.NewManager(ci.cli)
 	if err != nil {
 		return err
