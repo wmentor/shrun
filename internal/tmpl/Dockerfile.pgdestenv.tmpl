@@ -5,7 +5,7 @@ ARG PG_MAJOR={{ PgMajorVersion }}
 ENV APP /opt/pgpro/sdm-$PG_MAJOR
 
 RUN <<-EOF
-  mkdir -p /etc/systemd/system/systemd-logind.service.d /etc/shardman /build /mntdata /tmp 
+  mkdir -p /etc/systemd/system/systemd-logind.service.d /etc/shardman /build /mntdata /tmp /acl/data
   chmod -R 0777 /mntdata
   apt-get autoclean -y && apt-get update -y 
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -22,12 +22,16 @@ RUN <<-EOF
     gdb gdb-multiarch sudo \
     libcurl4-nss-dev libcurl4 \
     telnet libxslt-dev libxml2-dev \
-    iproute2 less jq
+    iproute2 less jq acl
   apt-get purge -y --allow-remove-essential --allow-change-held-packages
   apt-get autoremove -y
   apt-get clean -y
   grep ^postgres: /etc/group || groupadd postgres
   grep ^postgres: /etc/passwd
   usermod -s /bin/bash postgres || useradd -M -N -g postgres -r -d /var/lib/postgresql -s /bin/bash -c "Postgres Pro Server" postgres 
+  chown -R postgres:postgres /acl/data
+  chmod -R 0750 /acl/data
+  groupadd shrun
+  setfacl -m g:shrun:r-x /acl /acl/data
 EOF
 # RUN echo 'eval "$(ssh-agent -s)"' >> .bashrc && echo 'ssh-add /var/lib/postgresql/.ssh/id_rsa' >> .bashrc
