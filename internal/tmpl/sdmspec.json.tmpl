@@ -46,7 +46,7 @@
      "shardman.silk_num_workers": "8",
      "shared_buffers": "4GB",
      "ptrack.map_size": "16",
-     "shared_preload_libraries": "postgres_fdw, shardman{{ if PgMajorVersion == 14 }}, ptrack{{ end }}"
+     "shared_preload_libraries": "postgres_fdw, shardman, ptrack"
     },{{ if EnableSSL || EnableStrictHBA }}
     "strictUserHBA": true,{{ end }}
     "pgHBA": [
@@ -73,3 +73,4 @@
     "tcp_user_timeout": "10000"
    }
   }
+  

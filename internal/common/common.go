@@ -58,6 +58,8 @@ const (
 	GoSwagVersion = "1.16.3"
 	UbuntuVersion = "22.04"
 	EtcdVersion   = "3.5.12"
+
+	DockerSyntax = `docker/dockerfile:1@sha256:ac85f380a63b13dfcefa89046420e1781752bab202122f8f50032edf31be0021`
 )
 
 var (

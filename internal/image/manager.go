@@ -187,6 +187,7 @@ func (mng *Manager) ExportFiles(settings entities.ExportFileSettings) error {
 		vars.Set("GoSwagVersion", common.GoSwagVersion)
 		vars.Set("GoArch", common.WorkArch)
 		vars.Set("GoEnableProxy", !settings.NoGoProxy)
+		vars.Set("DockerSyntax", common.DockerSyntax)
 
 		vars.Set("UbuntuVersion", common.UbuntuVersion)
 		vars.Set("EtcdVersion", common.EtcdVersion)
